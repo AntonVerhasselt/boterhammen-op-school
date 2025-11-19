@@ -198,8 +198,8 @@ export function ChildForm({ childId, onSuccess }: ChildFormProps) {
       // Set flag to prevent onValueChange from clearing values during initialization
       isInitializingRef.current = true;
       
-      // Use reset with shouldValidate: false to avoid validation errors during population
-      form.reset(formValues, { shouldValidate: false });
+      // Reset form with values (validation will not run automatically on reset)
+      form.reset(formValues);
       
       setFormInitialized(true);
       

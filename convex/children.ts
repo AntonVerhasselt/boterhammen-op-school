@@ -116,58 +116,33 @@ export const getChild = query({
     v.null()
   ),
   handler: async (ctx, args) => {
-    console.log("[getChild] Starting query for childId:", args.childId);
-    
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
-      console.log("[getChild] No identity found");
       return null;
     }
 
     const clerkUserId = identity.subject;
-    console.log("[getChild] Clerk user ID:", clerkUserId);
-    
     const user = await ctx.db
       .query("users")
       .withIndex("by_clerkUserId", (q) => q.eq("clerkUserId", clerkUserId))
       .first();
 
     if (!user) {
-      console.log("[getChild] User not found in database");
       return null;
     }
-
-    console.log("[getChild] User found:", user._id);
 
     const child = await ctx.db.get(args.childId);
     if (!child) {
-      console.log("[getChild] Child not found in database");
       return null;
     }
-
-    console.log("[getChild] Child found:", {
-      _id: child._id,
-      firstName: child.firstName,
-      lastName: child.lastName,
-      schoolId: child.schoolId,
-      classId: child.classId,
-      parentId: child.parentId,
-    });
 
     // Verify parent ownership
     if (child.parentId !== user._id) {
-      console.log("[getChild] Parent ownership mismatch. Child parentId:", child.parentId, "User _id:", user._id);
       return null;
     }
 
-    // Fetch school and class to log their names
-    const school = await ctx.db.get(child.schoolId);
-    const classItem = await ctx.db.get(child.classId);
-    
-    console.log("[getChild] School data:", school ? { _id: school._id, name: school.name } : "null");
-    console.log("[getChild] Class data:", classItem ? { _id: classItem._id, name: classItem.name, schoolId: classItem.schoolId } : "null");
 
-    console.log("[getChild] Returning child data");
+
     return child;
   },
 });
