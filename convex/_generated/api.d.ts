@@ -9,6 +9,7 @@
  */
 
 import type * as children from "../children.js";
+import type * as orders from "../orders.js";
 import type * as schoolsandclasses from "../schoolsandclasses.js";
 import type * as users from "../users.js";
 
@@ -20,6 +21,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   children: typeof children;
+  orders: typeof orders;
   schoolsandclasses: typeof schoolsandclasses;
   users: typeof users;
 }>;
