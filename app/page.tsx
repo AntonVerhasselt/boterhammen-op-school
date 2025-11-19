@@ -1,7 +1,6 @@
 "use client";
 
 import { Authenticated } from "convex/react";
-import Link from "next/link";
 import { UserButton } from "@clerk/nextjs";
 
 export default function Home() {
@@ -30,23 +29,9 @@ function Content() {
       <p>
         Edit{" "}
         <code className="text-sm font-bold font-mono bg-slate-200 dark:bg-slate-800 px-1 py-0.5 rounded-md">
-          convex/myFunctions.ts
-        </code>{" "}
-        to change your backend
-      </p>
-      <p>
-        Edit{" "}
-        <code className="text-sm font-bold font-mono bg-slate-200 dark:bg-slate-800 px-1 py-0.5 rounded-md">
           app/page.tsx
         </code>{" "}
         to change your frontend
-      </p>
-      <p>
-        See the{" "}
-        <Link href="/server" className="underline hover:no-underline">
-          /server route
-        </Link>{" "}
-        for an example of loading data in a server component
       </p>
       <div className="flex flex-col">
         <p className="text-lg font-bold">Useful resources:</p>
