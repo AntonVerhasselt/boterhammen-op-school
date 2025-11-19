@@ -4,6 +4,7 @@ import "./globals.css";
 import ConvexClientProvider from "@/components/ConvexClientProvider";
 import { ClerkProvider } from "@clerk/nextjs";
 import OnboardingGuard from "@/components/OnboardingGuard";
+import NavBar from "@/components/dashboard/NavBar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,7 +36,10 @@ export default function RootLayout({
       >
         <ClerkProvider dynamic>
           <ConvexClientProvider>
-            <OnboardingGuard>{children}</OnboardingGuard>
+            <OnboardingGuard>
+              <NavBar />
+              {children}
+            </OnboardingGuard>
           </ConvexClientProvider>
         </ClerkProvider>
       </body>
