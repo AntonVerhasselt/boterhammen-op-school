@@ -9,8 +9,10 @@
  */
 
 import type * as children from "../children.js";
+import type * as crons from "../crons.js";
 import type * as orders from "../orders.js";
 import type * as schoolsandclasses from "../schoolsandclasses.js";
+import type * as updateOrders from "../updateOrders.js";
 import type * as users from "../users.js";
 
 import type {
@@ -21,8 +23,10 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   children: typeof children;
+  crons: typeof crons;
   orders: typeof orders;
   schoolsandclasses: typeof schoolsandclasses;
+  updateOrders: typeof updateOrders;
   users: typeof users;
 }>;
 
