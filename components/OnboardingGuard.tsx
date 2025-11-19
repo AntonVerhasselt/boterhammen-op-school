@@ -43,8 +43,17 @@ export default function OnboardingGuard({
     }
   }, [currentUser, pathname, router, mounted]);
 
-  // Always render children to avoid hydration mismatch
-  // The redirect will happen in useEffect after mount
-  return <>{children}</>;
+  // Show nothing while loading or redirecting
+  if (!mounted || currentUser === undefined) {
+    return null; // or a loading spinner
+  }
+
+  // If on onboarding page or user exists, show children
+  if (pathname === "/onboarding" || currentUser !== null) {
+    return <>{children}</>;
+  }
+
+  // Otherwise, show nothing while redirecting
+  return null;
 }
 
