@@ -1,6 +1,47 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
+const breadType = v.union(
+  v.literal("white"),
+  v.literal("brown"),
+  v.literal("none")
+);
+
+/**
+ * Validates and trims a name field.
+ * @param name - The name to validate
+ * @param fieldName - The field name for error messages (e.g., "First name", "Last name")
+ * @returns The trimmed name
+ * @throws Error if the name is invalid
+ */
+function validateName(name: string, fieldName: string): string {
+  const trimmed = name.trim();
+  if (trimmed.length < 1 || trimmed.length > 50) {
+    throw new Error(`${fieldName} must be between 1 and 50 characters`);
+  }
+  return trimmed;
+}
+
+/**
+ * Validates and trims an optional allergies string.
+ * @param allergies - The allergies string (may be undefined)
+ * @returns The trimmed allergies string or undefined if empty/undefined
+ * @throws Error if the allergies string is too long
+ */
+function validateAllergies(allergies: string | undefined): string | undefined {
+  if (!allergies) {
+    return undefined;
+  }
+  const trimmed = allergies.trim();
+  if (trimmed.length === 0) {
+    return undefined;
+  }
+  if (trimmed.length > 500) {
+    throw new Error("Allergies description must be 500 characters or less");
+  }
+  return trimmed;
+}
+
 /**
  * Create a new child for the logged-in parent.
  */
@@ -11,12 +52,8 @@ export const createChild = mutation({
     schoolId: v.id("schools"),
     classId: v.id("classes"),
     preferences: v.object({
-      allergies: v.string(),
-      breadType: v.union(
-        v.literal("white"),
-        v.literal("brown"),
-        v.literal("none")
-      ),
+      allergies: v.optional(v.string()),
+      breadType: breadType,
       crust: v.boolean(),
       butter: v.boolean(),
     }),
@@ -38,17 +75,9 @@ export const createChild = mutation({
       throw new Error("User profile not found");
     }
 
-    // Validate firstName
-    const trimmedFirstName = args.firstName.trim();
-    if (trimmedFirstName.length < 1 || trimmedFirstName.length > 50) {
-      throw new Error("First name must be between 1 and 50 characters");
-    }
-
-    // Validate lastName
-    const trimmedLastName = args.lastName.trim();
-    if (trimmedLastName.length < 1 || trimmedLastName.length > 50) {
-      throw new Error("Last name must be between 1 and 50 characters");
-    }
+    // Validate and trim names
+    const trimmedFirstName = validateName(args.firstName, "First name");
+    const trimmedLastName = validateName(args.lastName, "Last name");
 
     // Verify school exists
     const school = await ctx.db.get(args.schoolId);
@@ -65,11 +94,8 @@ export const createChild = mutation({
       throw new Error("Class does not belong to the selected school");
     }
 
-    // Validate allergies string (optional field)
-    const trimmedAllergies = args.preferences.allergies.trim();
-    if (trimmedAllergies.length > 500) {
-      throw new Error("Allergies description must be 500 characters or less");
-    }
+    // Validate allergies (optional field)
+    const trimmedAllergies = validateAllergies(args.preferences.allergies);
 
     // Insert new child
     return await ctx.db.insert("children", {
@@ -103,12 +129,8 @@ export const getChild = query({
       schoolId: v.id("schools"),
       classId: v.id("classes"),
       preferences: v.object({
-        allergies: v.string(),
-        breadType: v.union(
-          v.literal("white"),
-          v.literal("brown"),
-          v.literal("none")
-        ),
+        allergies: v.optional(v.string()),
+        breadType: breadType,
         crust: v.boolean(),
         butter: v.boolean(),
       }),
@@ -141,8 +163,6 @@ export const getChild = query({
       return null;
     }
 
-
-
     return child;
   },
 });
@@ -166,12 +186,8 @@ export const getChildWithDetails = query({
       schoolName: v.string(),
       className: v.string(),
       preferences: v.object({
-        allergies: v.string(),
-        breadType: v.union(
-          v.literal("white"),
-          v.literal("brown"),
-          v.literal("none")
-        ),
+        allergies: v.optional(v.string()),
+        breadType: breadType,
         crust: v.boolean(),
         butter: v.boolean(),
       }),
@@ -231,12 +247,8 @@ export const listMyChildren = query({
       schoolId: v.id("schools"),
       classId: v.id("classes"),
       preferences: v.object({
-        allergies: v.string(),
-        breadType: v.union(
-          v.literal("white"),
-          v.literal("brown"),
-          v.literal("none")
-        ),
+        allergies: v.optional(v.string()),
+        breadType: breadType,
         crust: v.boolean(),
         butter: v.boolean(),
       }),
@@ -282,12 +294,8 @@ export const listMyChildrenWithDetails = query({
       schoolName: v.string(),
       className: v.string(),
       preferences: v.object({
-        allergies: v.string(),
-        breadType: v.union(
-          v.literal("white"),
-          v.literal("brown"),
-          v.literal("none")
-        ),
+        allergies: v.optional(v.string()),
+        breadType: breadType,
         crust: v.boolean(),
         butter: v.boolean(),
       }),
@@ -352,12 +360,8 @@ export const updateChild = mutation({
     schoolId: v.id("schools"),
     classId: v.id("classes"),
     preferences: v.object({
-      allergies: v.string(),
-      breadType: v.union(
-        v.literal("white"),
-        v.literal("brown"),
-        v.literal("none")
-      ),
+      allergies: v.optional(v.string()),
+      breadType: breadType,
       crust: v.boolean(),
       butter: v.boolean(),
     }),
@@ -388,17 +392,9 @@ export const updateChild = mutation({
       throw new Error("You do not have permission to update this child");
     }
 
-    // Validate firstName
-    const trimmedFirstName = args.firstName.trim();
-    if (trimmedFirstName.length < 1 || trimmedFirstName.length > 50) {
-      throw new Error("First name must be between 1 and 50 characters");
-    }
-
-    // Validate lastName
-    const trimmedLastName = args.lastName.trim();
-    if (trimmedLastName.length < 1 || trimmedLastName.length > 50) {
-      throw new Error("Last name must be between 1 and 50 characters");
-    }
+    // Validate and trim names
+    const trimmedFirstName = validateName(args.firstName, "First name");
+    const trimmedLastName = validateName(args.lastName, "Last name");
 
     // Verify school exists
     const school = await ctx.db.get(args.schoolId);
@@ -415,11 +411,8 @@ export const updateChild = mutation({
       throw new Error("Class does not belong to the selected school");
     }
 
-    // Validate allergies string (optional field)
-    const trimmedAllergies = args.preferences.allergies.trim();
-    if (trimmedAllergies.length > 500) {
-      throw new Error("Allergies description must be 500 characters or less");
-    }
+    // Validate allergies (optional field)
+    const trimmedAllergies = validateAllergies(args.preferences.allergies);
 
     // Update child
     await ctx.db.patch(args.childId, {

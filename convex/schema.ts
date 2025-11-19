@@ -49,7 +49,7 @@ export default defineSchema({
     schoolId: v.id("schools"),
     classId: v.id("classes"),
     preferences: v.object({
-      allergies: v.string(),
+      allergies: v.optional(v.string()),
       breadType: breadType,
       crust: v.boolean(),
       butter: v.boolean(),
