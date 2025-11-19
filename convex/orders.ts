@@ -1,6 +1,5 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { Id } from "./_generated/dataModel";
 
 /**
  * Create a new order for the logged-in parent.
@@ -116,6 +115,7 @@ export const listMyOrders = query({
       endDate: v.string(),
       deliveryStatus: v.union(
         v.literal("ordered"),
+        v.literal("in-progress"),
         v.literal("delivered"),
         v.literal("cancelled")
       ),

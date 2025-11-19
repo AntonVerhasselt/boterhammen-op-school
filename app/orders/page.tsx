@@ -49,12 +49,13 @@ function getPaymentStatusVariant(
 }
 
 function getDeliveryStatusVariant(
-  status: "ordered" | "delivered" | "cancelled"
+  status: "ordered" | "in-progress" | "delivered" | "cancelled"
 ): "default" | "secondary" | "destructive" | "outline" {
   switch (status) {
     case "delivered":
       return "default"
     case "ordered":
+    case "in-progress":
       return "secondary"
     case "cancelled":
       return "destructive"
@@ -70,8 +71,11 @@ function formatPaymentStatus(
 }
 
 function formatDeliveryStatus(
-  status: "ordered" | "delivered" | "cancelled"
+  status: "ordered" | "in-progress" | "delivered" | "cancelled"
 ): string {
+  if (status === "in-progress") {
+    return "In Progress"
+  }
   return status.charAt(0).toUpperCase() + status.slice(1)
 }
 
