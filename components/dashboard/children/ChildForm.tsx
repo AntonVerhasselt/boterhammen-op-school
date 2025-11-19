@@ -262,17 +262,23 @@ export function ChildForm({ childId, onSuccess }: ChildFormProps) {
     }
   }
 
-  const schoolOptions =
-    schools?.map((school) => ({
-      value: String(school._id),
-      label: school.name,
-    })) || []
+  const schoolOptions = React.useMemo(
+    () =>
+      schools?.map((school) => ({
+        value: String(school._id),
+        label: school.name,
+      })) || [],
+    [schools]
+  )
 
-  const classOptions =
-    classesForSchool?.map((classItem) => ({
-      value: String(classItem._id),
-      label: classItem.name,
-    })) || []
+  const classOptions = React.useMemo(
+    () =>
+      classesForSchool?.map((classItem) => ({
+        value: String(classItem._id),
+        label: classItem.name,
+      })) || [],
+    [classesForSchool]
+  )
   
   // Log options whenever they change
   React.useEffect(() => {
