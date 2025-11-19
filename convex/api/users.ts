@@ -1,6 +1,9 @@
 import { mutation } from "../_generated/server";
 import { v } from "convex/values";
 
+// E.164 phone number pattern: + followed by 1-15 digits (first digit must be 1-9)
+const E164_PHONE_PATTERN = /^\+[1-9]\d{1,14}$/;
+
 export const createMyUser = mutation({
   args: {
     firstName: v.string(),
@@ -21,6 +24,26 @@ export const createMyUser = mutation({
       throw new Error("User email is required");
     }
 
+    // Trim and validate firstName
+    const trimmedFirstName = args.firstName.trim();
+    if (trimmedFirstName.length < 1 || trimmedFirstName.length > 50) {
+      throw new Error("First name must be between 1 and 50 characters");
+    }
+
+    // Trim and validate lastName
+    const trimmedLastName = args.lastName.trim();
+    if (trimmedLastName.length < 1 || trimmedLastName.length > 50) {
+      throw new Error("Last name must be between 1 and 50 characters");
+    }
+
+    // Trim and validate phoneNumber (E.164 format)
+    const trimmedPhoneNumber = args.phoneNumber.trim();
+    if (!E164_PHONE_PATTERN.test(trimmedPhoneNumber)) {
+      throw new Error(
+        "Phone number must be in E.164 format (e.g., +1234567890)"
+      );
+    }
+
     // Check if user already exists
     const existingUser = await ctx.db
       .query("users")
@@ -31,11 +54,11 @@ export const createMyUser = mutation({
       throw new Error("User profile already exists");
     }
 
-    // Insert new user
+    // Insert new user with trimmed and validated values
     const userId = await ctx.db.insert("users", {
-      firstName: args.firstName,
-      lastName: args.lastName,
-      phoneNumber: args.phoneNumber,
+      firstName: trimmedFirstName,
+      lastName: trimmedLastName,
+      phoneNumber: trimmedPhoneNumber,
       email,
       clerkUserId,
     });
