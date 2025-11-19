@@ -25,6 +25,7 @@ const paymentStatus = v.union(
 // Delivery/fulfillment lifecycle
 const deliveryStatus = v.union(
   v.literal("ordered"),
+  v.literal("in-progress"),
   v.literal("delivered"),
   v.literal("cancelled")
 );

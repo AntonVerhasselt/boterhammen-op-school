@@ -30,36 +30,38 @@ function formatOrderType(orderType: "day-order" | "week-order" | "month-order"):
   }
 }
 
-function getPaymentStatusVariant(
+function getPaymentStatusClassName(
   status: "pending" | "paid" | "refunded" | "failed" | "cancelled"
-): "default" | "secondary" | "destructive" | "outline" {
+): string {
   switch (status) {
     case "paid":
-      return "default"
+      return "bg-green-100 text-green-800 border-green-200 hover:bg-green-200"
     case "pending":
-      return "secondary"
+      return "bg-amber-100 text-amber-800 border-amber-200 hover:bg-amber-200"
     case "failed":
     case "cancelled":
-      return "destructive"
+      return "bg-red-100 text-red-800 border-red-200 hover:bg-red-200"
     case "refunded":
-      return "outline"
+      return "bg-gray-100 text-gray-800 border-gray-200 hover:bg-gray-200"
     default:
-      return "secondary"
+      return "bg-gray-100 text-gray-800 border-gray-200 hover:bg-gray-200"
   }
 }
 
-function getDeliveryStatusVariant(
-  status: "ordered" | "delivered" | "cancelled"
-): "default" | "secondary" | "destructive" | "outline" {
+function getDeliveryStatusClassName(
+  status: "ordered" | "in-progress" | "delivered" | "cancelled"
+): string {
   switch (status) {
-    case "delivered":
-      return "default"
     case "ordered":
-      return "secondary"
+      return "bg-gray-100 text-gray-800 border-gray-200 hover:bg-gray-200"
+    case "in-progress":
+      return "bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200"
+    case "delivered":
+      return "bg-green-100 text-green-800 border-green-200 hover:bg-green-200"
     case "cancelled":
-      return "destructive"
+      return "bg-red-100 text-red-800 border-red-200 hover:bg-red-200"
     default:
-      return "secondary"
+      return "bg-gray-100 text-gray-800 border-gray-200 hover:bg-gray-200"
   }
 }
 
@@ -70,8 +72,11 @@ function formatPaymentStatus(
 }
 
 function formatDeliveryStatus(
-  status: "ordered" | "delivered" | "cancelled"
+  status: "ordered" | "in-progress" | "delivered" | "cancelled"
 ): string {
+  if (status === "in-progress") {
+    return "In Progress"
+  }
   return status.charAt(0).toUpperCase() + status.slice(1)
 }
 
@@ -146,14 +151,14 @@ export default function OrdersPage() {
                     </TableCell>
                     <TableCell>
                       <Badge
-                        variant={getDeliveryStatusVariant(order.deliveryStatus)}
+                        className={getDeliveryStatusClassName(order.deliveryStatus)}
                       >
                         {formatDeliveryStatus(order.deliveryStatus)}
                       </Badge>
                     </TableCell>
                     <TableCell>
                       <Badge
-                        variant={getPaymentStatusVariant(order.paymentStatus)}
+                        className={getPaymentStatusClassName(order.paymentStatus)}
                       >
                         {formatPaymentStatus(order.paymentStatus)}
                       </Badge>
