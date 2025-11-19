@@ -2,14 +2,11 @@
 
 import {
   Authenticated,
-  Unauthenticated,
   useMutation,
   useQuery,
 } from "convex/react";
 import { api } from "../convex/_generated/api";
 import Link from "next/link";
-import { SignUpButton } from "@clerk/nextjs";
-import { SignInButton } from "@clerk/nextjs";
 import { UserButton } from "@clerk/nextjs";
 
 export default function Home() {
@@ -26,29 +23,8 @@ export default function Home() {
         <Authenticated>
           <Content />
         </Authenticated>
-        <Unauthenticated>
-          <SignInForm />
-        </Unauthenticated>
       </main>
     </>
-  );
-}
-
-function SignInForm() {
-  return (
-    <div className="flex flex-col gap-8 w-96 mx-auto">
-      <p>Log in to see the numbers</p>
-      <SignInButton mode="redirect" forceRedirectUrl="/">
-        <button className="bg-foreground text-background px-4 py-2 rounded-md">
-          Sign in
-        </button>
-      </SignInButton>
-      <SignUpButton mode="redirect" forceRedirectUrl="/">
-        <button className="bg-foreground text-background px-4 py-2 rounded-md">
-          Sign up
-        </button>
-      </SignUpButton>
-    </div>
   );
 }
 
