@@ -41,6 +41,28 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
+const phoneInputStyles = [
+  "[&_.PhoneInputInput]:flex",
+  "[&_.PhoneInputInput]:h-9",
+  "[&_.PhoneInputInput]:w-full",
+  "[&_.PhoneInputInput]:min-w-0",
+  "[&_.PhoneInputInput]:rounded-md",
+  "[&_.PhoneInputInput]:border",
+  "[&_.PhoneInputInput]:border-input",
+  "[&_.PhoneInputInput]:bg-transparent",
+  "[&_.PhoneInputInput]:px-3",
+  "[&_.PhoneInputInput]:py-1",
+  "[&_.PhoneInputInput]:text-base",
+  "[&_.PhoneInputInput]:shadow-xs",
+  "[&_.PhoneInputInput]:transition-[color,box-shadow]",
+  "[&_.PhoneInputInput]:outline-none",
+  "[&_.PhoneInputInput]:focus-visible:border-ring",
+  "[&_.PhoneInputInput]:focus-visible:ring-ring/50",
+  "[&_.PhoneInputInput]:focus-visible:ring-[3px]",
+  "[&_.PhoneInputInput]:md:text-sm",
+  "[&_.PhoneInputCountry]:mr-2",
+].join(" ");
+
 export default function OnboardingPage() {
   const router = useRouter();
   const createUser = useMutation(api.users.createMyUser);
@@ -120,7 +142,7 @@ export default function OnboardingPage() {
                         defaultCountry="BE"
                         value={field.value}
                         onChange={field.onChange}
-                        className="[&_.PhoneInputInput]:flex [&_.PhoneInputInput]:h-9 [&_.PhoneInputInput]:w-full [&_.PhoneInputInput]:min-w-0 [&_.PhoneInputInput]:rounded-md [&_.PhoneInputInput]:border [&_.PhoneInputInput]:border-input [&_.PhoneInputInput]:bg-transparent [&_.PhoneInputInput]:px-3 [&_.PhoneInputInput]:py-1 [&_.PhoneInputInput]:text-base [&_.PhoneInputInput]:shadow-xs [&_.PhoneInputInput]:transition-[color,box-shadow] [&_.PhoneInputInput]:outline-none [&_.PhoneInputInput]:focus-visible:border-ring [&_.PhoneInputInput]:focus-visible:ring-ring/50 [&_.PhoneInputInput]:focus-visible:ring-[3px] [&_.PhoneInputInput]:md:text-sm [&_.PhoneInputCountry]:mr-2"
+                        className={phoneInputStyles}
                       />
                     </FormControl>
                     <FormMessage />
