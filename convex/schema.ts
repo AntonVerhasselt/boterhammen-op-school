@@ -1,6 +1,34 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
+const breadType = v.union(
+  v.literal("white"),
+  v.literal("brown"),
+  v.literal("none")
+);
+
+const orderType = v.union(
+  v.literal("day-order"),
+  v.literal("week-order"),
+  v.literal("month-order")
+);
+
+// Payments lifecycle kept simple for now
+const paymentStatus = v.union(
+  v.literal("pending"),
+  v.literal("paid"),
+  v.literal("refunded"),
+  v.literal("failed"),
+  v.literal("cancelled")
+);
+
+// Delivery/fulfillment lifecycle
+const deliveryStatus = v.union(
+  v.literal("ordered"),
+  v.literal("delivered"),
+  v.literal("cancelled")
+);
+
 // The schema is entirely optional.
 // You can delete this file (schema.ts) and the
 // app will continue to work.
@@ -22,15 +50,33 @@ export default defineSchema({
     classId: v.id("classes"),
     preferences: v.object({
       allergies: v.string(),
-      breadType: v.union(
-        v.literal("white"),
-        v.literal("brown"),
-        v.literal("none"),
-      ),
+      breadType: breadType,
       crust: v.boolean(),
       butter: v.boolean(),
     }),
   }).index("by_parentId", ["parentId"]),
+
+  orders: defineTable({
+    parentId: v.id("users"),
+    childId: v.id("children"),
+    orderType: orderType,
+    startDate: v.string(),  // ISO 8601 format: YYYY-MM-DD
+    endDate: v.string(),    // ISO 8601 format: YYYY-MM-DD
+    preferences: v.object({
+      notes: v.string(),       // free text (can be empty string)
+      allergies: v.string(),   // keep simple as free text for now
+      breadType,               // "white" | "brown" | "none"
+      crust: v.boolean(),
+      butter: v.boolean(),
+    }),
+    paymentStatus: paymentStatus,
+    deliveryStatus: deliveryStatus,
+  }).index("by_parentId", ["parentId"])
+  .index("by_childId", ["childId"])
+  .index("by_startDate", ["startDate"])
+  .index("by_date_range", ["startDate", "endDate"])
+  .index("by_paymentStatus", ["paymentStatus"])
+  .index("by_deliveryStatus", ["deliveryStatus"]),
 
   schools: defineTable({
     name: v.string(),
