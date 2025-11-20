@@ -59,14 +59,14 @@ export function ChildForm({ childId, onSuccess }: ChildFormProps) {
   const isEditMode = !!childId
 
   const child = useQuery(
-    api.children.getChild,
+    api.children.get.getChildById,
     childId ? { childId } : "skip"
   )
 
   const schools = useQuery(api["schoolsandclasses"].listSchools, {})
 
-  const createChild = useMutation(api.children.createChild)
-  const updateChild = useMutation(api.children.updateChild)
+  const createChild = useMutation(api.children.create.createChild)
+  const updateChild = useMutation(api.children.update.updateChild)
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -82,12 +82,15 @@ export function ChildForm({ childId, onSuccess }: ChildFormProps) {
     },
   })
 
+  // Track if form has been initialized with child data
+  const [formInitialized, setFormInitialized] = React.useState(false)
+
   const selectedSchoolId = form.watch("schoolId")
   const selectedClassId = form.watch("classId")
 
-  // In edit mode, fetch classes for the child's school immediately
-  // In create mode, fetch classes when a school is selected
-  const schoolIdForClasses = isEditMode && child?.schoolId 
+  // In edit mode, fetch classes for the child's school immediately before form initialization
+  // After form initialization or in create mode, use selectedSchoolId to allow updates when school changes
+  const schoolIdForClasses = isEditMode && !formInitialized && child?.schoolId 
     ? child.schoolId 
     : selectedSchoolId
 
@@ -119,13 +122,11 @@ export function ChildForm({ childId, onSuccess }: ChildFormProps) {
 
     // Only reset class if school actually changed and we have both values
     if (selectedSchoolId && selectedClassId && prevSchoolIdRef.current !== selectedSchoolId) {
-      console.log("[ChildForm] School changed from", prevSchoolIdRef.current, "to", selectedSchoolId);
       // Check if the selected class belongs to the new school
       const classBelongsToSchool = classesForSchool?.some(
         (c) => c._id === selectedClassId
       )
       if (!classBelongsToSchool) {
-        console.log("[ChildForm] Clearing class because it doesn't belong to new school");
         form.setValue("classId", "")
       }
     }
@@ -134,34 +135,16 @@ export function ChildForm({ childId, onSuccess }: ChildFormProps) {
     prevSchoolIdRef.current = selectedSchoolId
   }, [selectedSchoolId, selectedClassId, classesForSchool, form])
 
-  // Track if form has been initialized with child data
-  const [formInitialized, setFormInitialized] = React.useState(false)
-  
   // Track if we're currently initializing to prevent onValueChange from clearing values
   const isInitializingRef = React.useRef(false)
 
   // Populate form when child data, schools, and classes are loaded (edit mode)
   React.useEffect(() => {
     if (child && isEditMode && schools && classesForSchool && !formInitialized) {
-      console.log("[ChildForm] Populating form with data:", {
-        child: {
-          firstName: child.firstName,
-          lastName: child.lastName,
-          schoolId: child.schoolId,
-          classId: child.classId,
-        },
-        schoolsCount: schools.length,
-        classesCount: classesForSchool.length,
-        schoolOptions: schools.map(s => ({ id: s._id, name: s.name })),
-        classOptions: classesForSchool.map(c => ({ id: c._id, name: c.name })),
-      });
-
       // Verify the class belongs to the school
       const classBelongsToSchool = classesForSchool.some(
         (c) => c._id === child.classId
       )
-      
-      console.log("[ChildForm] Class belongs to school:", classBelongsToSchool);
       
       // Ensure IDs are strings for the form
       const schoolIdStr = String(child.schoolId)
@@ -178,20 +161,6 @@ export function ChildForm({ childId, onSuccess }: ChildFormProps) {
         butter: child.preferences.butter,
       };
       
-      console.log("[ChildForm] Resetting form with values:", formValues);
-      // Prepare school options for logging
-      const schoolOptionsForLog = schools.map(s => String(s._id));
-      
-      console.log("[ChildForm] School ID comparison:", {
-        childSchoolId: child.schoolId,
-        childSchoolIdType: typeof child.schoolId,
-        formSchoolId: formValues.schoolId,
-        formSchoolIdType: typeof formValues.schoolId,
-        schoolIdStr: schoolIdStr,
-        schoolOptions: schoolOptionsForLog,
-        schoolIdInOptions: schoolOptionsForLog.includes(schoolIdStr),
-      });
-      
       // Update the ref before resetting to prevent the school change effect from firing
       prevSchoolIdRef.current = schoolIdStr;
       
@@ -207,14 +176,6 @@ export function ChildForm({ childId, onSuccess }: ChildFormProps) {
       setTimeout(() => {
         isInitializingRef.current = false;
       }, 200);
-      
-      // Log form state after reset
-      setTimeout(() => {
-        const currentValues = form.getValues();
-        console.log("[ChildForm] Form values after reset:", currentValues);
-        console.log("[ChildForm] School field value:", currentValues.schoolId);
-        console.log("[ChildForm] Class field value:", currentValues.classId);
-      }, 100);
     }
   }, [child, isEditMode, schools, classesForSchool, form, formInitialized])
 
@@ -279,18 +240,6 @@ export function ChildForm({ childId, onSuccess }: ChildFormProps) {
       })) || [],
     [classesForSchool]
   )
-  
-  // Log options whenever they change
-  React.useEffect(() => {
-    console.log("[ChildForm] Options prepared:", {
-      schoolOptionsCount: schoolOptions.length,
-      classOptionsCount: classOptions.length,
-      schoolOptions: schoolOptions.slice(0, 5), // Log first 5
-      classOptions: classOptions.slice(0, 5), // Log first 5
-      currentSchoolId: form.getValues("schoolId"),
-      currentClassId: form.getValues("classId"),
-    });
-  }, [schoolOptions, classOptions, form]);
 
   if (isLoading) {
     return (
@@ -373,34 +322,25 @@ export function ChildForm({ childId, onSuccess }: ChildFormProps) {
             <FormField
               control={form.control}
               name="schoolId"
-              render={({ field }) => {
-                console.log("[ChildForm] School field render:", {
-                  fieldValue: field.value,
-                  fieldValueType: typeof field.value,
-                  schoolOptions: schoolOptions,
-                  matchingOption: schoolOptions.find(opt => opt.value === field.value),
-                });
-                return (
-                  <FormItem>
-                    <FormLabel>School</FormLabel>
-                    <Select
-                      onValueChange={(value) => {
-                        console.log("[ChildForm] School changed to:", value, "isInitializing:", isInitializingRef.current);
-                        // Ignore empty values during initialization
-                        if (isInitializingRef.current && !value) {
-                          console.log("[ChildForm] Ignoring empty school value during initialization");
-                          return;
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>School</FormLabel>
+                  <Select
+                    onValueChange={(value) => {
+                      // Ignore empty values during initialization
+                      if (isInitializingRef.current && !value) {
+                        return;
+                      }
+                      if (value) {
+                        field.onChange(value)
+                        // Only clear class if we're not in the middle of initializing
+                        if (!isInitializingRef.current && (formInitialized || !isEditMode)) {
+                          form.setValue("classId", "")
                         }
-                        if (value) {
-                          field.onChange(value)
-                          // Only clear class if we're not in the middle of initializing
-                          if (!isInitializingRef.current && (formInitialized || !isEditMode)) {
-                            form.setValue("classId", "")
-                          }
-                        }
-                      }}
-                      value={field.value || undefined}
-                    >
+                      }
+                    }}
+                    value={field.value || undefined}
+                  >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select a school..." />
@@ -416,39 +356,28 @@ export function ChildForm({ childId, onSuccess }: ChildFormProps) {
                     </Select>
                     <FormMessage />
                   </FormItem>
-                );
-              }}
+                )}
             />
 
             <FormField
               control={form.control}
               name="classId"
-              render={({ field }) => {
-                console.log("[ChildForm] Class field render:", {
-                  fieldValue: field.value,
-                  fieldValueType: typeof field.value,
-                  selectedSchoolId: selectedSchoolId,
-                  classOptions: classOptions,
-                  matchingOption: classOptions.find(opt => opt.value === field.value),
-                });
-                return (
-                  <FormItem>
-                    <FormLabel>Class</FormLabel>
-                    <Select
-                      onValueChange={(value) => {
-                        console.log("[ChildForm] Class changed to:", value, "isInitializing:", isInitializingRef.current);
-                        // Ignore empty values during initialization
-                        if (isInitializingRef.current && !value) {
-                          console.log("[ChildForm] Ignoring empty class value during initialization");
-                          return;
-                        }
-                        if (value) {
-                          field.onChange(value)
-                        }
-                      }}
-                      value={field.value || undefined}
-                      disabled={!selectedSchoolId}
-                    >
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Class</FormLabel>
+                  <Select
+                    onValueChange={(value) => {
+                      // Ignore empty values during initialization
+                      if (isInitializingRef.current && !value) {
+                        return;
+                      }
+                      if (value) {
+                        field.onChange(value)
+                      }
+                    }}
+                    value={field.value || undefined}
+                    disabled={!selectedSchoolId}
+                  >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select a class..." />
@@ -464,8 +393,7 @@ export function ChildForm({ childId, onSuccess }: ChildFormProps) {
                     </Select>
                     <FormMessage />
                   </FormItem>
-                );
-              }}
+                )}
             />
 
             <FormField

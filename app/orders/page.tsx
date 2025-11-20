@@ -81,7 +81,7 @@ function formatDeliveryStatus(
 }
 
 export default function OrdersPage() {
-  const orders = useQuery(api.orders.listMyOrders, {})
+  const orders = useQuery(api.orders.list.listMyOrders, {})
 
   if (orders === undefined) {
     return (
