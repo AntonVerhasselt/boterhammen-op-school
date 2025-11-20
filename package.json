@@ -12,6 +12,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@clerk/backend": "^2.23.0",
     "@clerk/clerk-react": "^5.56.0",
     "@clerk/nextjs": "^6.12.6",
     "@hookform/resolvers": "^5.2.2",
@@ -35,6 +36,7 @@
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.66.1",
     "react-phone-number-input": "^3.4.14",
+    "recharts": "^2.15.4",
     "tailwind-merge": "^3.4.0",
     "zod": "^4.1.12"
   },
