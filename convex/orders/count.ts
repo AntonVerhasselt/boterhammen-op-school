@@ -29,8 +29,12 @@ export const countOrdersPerDay = action({
     }
 
     // Create Clerk client and check admin status
+    const clerkSecret = process.env.CLERK_SECRET_KEY;
+    if (!clerkSecret) {
+      throw new Error("Missing CLERK_SECRET_KEY");
+    }
     const clerkClient = createClerkClient({
-      secretKey: process.env.CLERK_SECRET_KEY,
+      secretKey: clerkSecret,
     });
 
     const user = await clerkClient.users.getUser(identity.subject);
