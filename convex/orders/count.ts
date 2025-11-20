@@ -2,9 +2,9 @@
 
 import { action } from "../_generated/server";
 import { v } from "convex/values";
-import { createClerkClient } from "@clerk/backend";
 import { internal } from "../_generated/api";
 import type { FunctionReference } from "convex/server";
+import { checkAdmin } from "../../lib/admin-check";
 
 /**
  * Count orders per day within a date range.
@@ -22,25 +22,8 @@ export const countOrdersPerDay = action({
     })
   ),
   handler: async (ctx, args) => {
-    // Get user identity
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Unauthorized");
-    }
-
-    // Create Clerk client and check admin status
-    const clerkSecret = process.env.CLERK_SECRET_KEY;
-    if (!clerkSecret) {
-      throw new Error("Missing CLERK_SECRET_KEY");
-    }
-    const clerkClient = createClerkClient({
-      secretKey: clerkSecret,
-    });
-
-    const user = await clerkClient.users.getUser(identity.subject);
-    if (user.publicMetadata?.isAdmin !== true) {
-      throw new Error("Unauthorized");
-    }
+    // Check if user is admin
+    await checkAdmin(ctx);
 
     // Query all orders that overlap with the date range
     // An order overlaps if: order.startDate <= endDate AND order.endDate >= startDate
