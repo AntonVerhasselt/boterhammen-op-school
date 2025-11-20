@@ -92,6 +92,13 @@ export function OrderForm({ onSuccess }: OrderFormProps) {
 
   const selectedStartDate = form.watch("startDate")
   const selectedOrderType = form.watch("orderType")
+  const selectedChildId = form.watch("childId")
+
+  // Fetch child data when a child is selected
+  const selectedChild = useQuery(
+    api.children.get.getChildById,
+    selectedChildId ? { childId: selectedChildId as Id<"children"> } : "skip"
+  )
 
   // Calculate end date when start date and order type change
   const endDate = React.useMemo(() => {
@@ -117,6 +124,32 @@ export function OrderForm({ onSuccess }: OrderFormProps) {
     },
     []
   )
+
+  // Auto-populate form fields with child preferences when child is selected
+  React.useEffect(() => {
+    if (selectedChild && selectedChildId) {
+      // Populate preference fields from child's preferences
+      form.setValue("allergies", selectedChild.preferences.allergies || "", {
+        shouldValidate: false,
+      })
+      form.setValue("breadType", selectedChild.preferences.breadType, {
+        shouldValidate: false,
+      })
+      form.setValue("crust", selectedChild.preferences.crust, {
+        shouldValidate: false,
+      })
+      form.setValue("butter", selectedChild.preferences.butter, {
+        shouldValidate: false,
+      })
+      // Note: We intentionally do NOT update the "notes" field as it's order-specific
+    } else if (!selectedChildId) {
+      // Reset preference fields to defaults when no child is selected
+      form.setValue("allergies", "", { shouldValidate: false })
+      form.setValue("breadType", "none", { shouldValidate: false })
+      form.setValue("crust", false, { shouldValidate: false })
+      form.setValue("butter", false, { shouldValidate: false })
+    }
+  }, [selectedChild, selectedChildId, form])
 
   const onSubmit = async (values: FormValues) => {
     try {

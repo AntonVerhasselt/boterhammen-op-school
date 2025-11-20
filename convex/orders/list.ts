@@ -1,4 +1,4 @@
-import { query } from "../_generated/server";
+import { query, internalQuery } from "../_generated/server";
 import { v } from "convex/values";
 
 /**
@@ -79,6 +79,29 @@ export const listMyOrders = query({
       endDate: order.endDate,
       deliveryStatus: order.deliveryStatus,
       paymentStatus: order.paymentStatus,
+    }));
+  },
+});
+
+/**
+ * Internal query to get all orders with their date ranges.
+ * Used by countOrdersPerDay action.
+ */
+export const getAllOrders = internalQuery({
+  args: {},
+  returns: v.array(
+    v.object({
+      _id: v.id("orders"),
+      startDate: v.string(),
+      endDate: v.string(),
+    })
+  ),
+  handler: async (ctx) => {
+    const orders = await ctx.db.query("orders").collect();
+    return orders.map((order) => ({
+      _id: order._id,
+      startDate: order.startDate,
+      endDate: order.endDate,
     }));
   },
 });
