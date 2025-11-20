@@ -8,12 +8,18 @@
  * @module
  */
 
-import type * as children from "../children.js";
+import type * as children_create from "../children/create.js";
+import type * as children_delete from "../children/delete.js";
+import type * as children_get from "../children/get.js";
+import type * as children_list from "../children/list.js";
+import type * as children_update from "../children/update.js";
 import type * as crons from "../crons.js";
-import type * as orders from "../orders.js";
+import type * as orders_create from "../orders/create.js";
+import type * as orders_list from "../orders/list.js";
+import type * as orders_update from "../orders/update.js";
 import type * as schoolsandclasses from "../schoolsandclasses.js";
-import type * as updateOrders from "../updateOrders.js";
-import type * as users from "../users.js";
+import type * as users_create from "../users/create.js";
+import type * as users_get from "../users/get.js";
 
 import type {
   ApiFromModules,
@@ -22,12 +28,18 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
-  children: typeof children;
+  "children/create": typeof children_create;
+  "children/delete": typeof children_delete;
+  "children/get": typeof children_get;
+  "children/list": typeof children_list;
+  "children/update": typeof children_update;
   crons: typeof crons;
-  orders: typeof orders;
+  "orders/create": typeof orders_create;
+  "orders/list": typeof orders_list;
+  "orders/update": typeof orders_update;
   schoolsandclasses: typeof schoolsandclasses;
-  updateOrders: typeof updateOrders;
-  users: typeof users;
+  "users/create": typeof users_create;
+  "users/get": typeof users_get;
 }>;
 
 /**

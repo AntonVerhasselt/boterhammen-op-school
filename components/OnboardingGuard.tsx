@@ -15,7 +15,7 @@ export default function OnboardingGuard({
   const [mounted, setMounted] = useState(false);
   
   // Use useQuery with error handling - if it throws, we treat it as user not found
-  const currentUser = useQuery(api.users.getMyUser);
+  const currentUser = useQuery(api.users.get.getMyUser);
 
   useEffect(() => {
     setMounted(true);

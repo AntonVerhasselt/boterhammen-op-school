@@ -19,7 +19,7 @@ export default function EditChildPage({
   params: Promise<{ childId: string }>
 }) {
   const { childId } = use(params)
-  const child = useQuery(api.children.getChildWithDetails, {
+  const child = useQuery(api.children.get.getChildByIdWithSchoolAndClassNames, {
     childId: childId as Id<"children">,
   })
 

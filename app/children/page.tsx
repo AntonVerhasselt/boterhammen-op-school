@@ -31,8 +31,8 @@ import {
 import { Id } from "@/convex/_generated/dataModel"
 
 export default function ChildrenPage() {
-  const children = useQuery(api.children.listMyChildrenWithDetails)
-  const deleteChild = useMutation(api.children.deleteChild)
+  const children = useQuery(api.children.list.listMyChildrenWithSchoolAndClassNames)
+  const deleteChild = useMutation(api.children.delete.deleteChildById)
 
   const handleDelete = async (childId: string) => {
     if (

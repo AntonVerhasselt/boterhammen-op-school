@@ -7,7 +7,7 @@ const crons = cronJobs();
 crons.cron(
   "update delivery status for all orders",
   "0 0 * * *",
-  internal.updateOrders.updateDeliveryStatusForAllOrders,
+  internal.orders.update.updateDeliveryStatusForAllOrders,
   {}
 );
 
