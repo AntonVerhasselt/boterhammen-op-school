@@ -87,7 +87,7 @@ export const listMyOrders = query({
  * Internal query to get all orders with their date ranges.
  * Used by countOrdersPerDay action.
  */
-export const getAllOrders = internalQuery({
+export const listAllOrders = internalQuery({
   args: {},
   returns: v.array(
     v.object({

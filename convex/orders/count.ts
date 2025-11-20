@@ -49,10 +49,10 @@ export const countOrdersPerDay = action({
       startDate: string;
       endDate: string;
     };
-    const getAllOrdersRef = (
+    const listAllOrdersRef = (
       internal.orders as {
         list?: {
-          getAllOrders: FunctionReference<
+          listAllOrders: FunctionReference<
             "query",
             "internal",
             Record<string, never>,
@@ -60,11 +60,11 @@ export const countOrdersPerDay = action({
           >;
         };
       }
-    ).list?.getAllOrders;
-    if (!getAllOrdersRef) {
-      throw new Error("getAllOrders function not found");
+    ).list?.listAllOrders;
+    if (!listAllOrdersRef) {
+      throw new Error("listAllOrders function not found");
     }
-    const allOrders: OrderData[] = await ctx.runQuery(getAllOrdersRef, {});
+    const allOrders: OrderData[] = await ctx.runQuery(listAllOrdersRef, {});
 
     // Filter orders that overlap with the date range
     const overlappingOrders = allOrders.filter(
