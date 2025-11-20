@@ -23,7 +23,7 @@ export default function NavBar() {
           {isAdminRoute ? (
             <>
               <Link
-                href="/admin/charts"
+                href="/admin"
                 className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
               >
                 Charts
