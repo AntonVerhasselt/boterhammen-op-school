@@ -1,4 +1,4 @@
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { ReactNode } from "react";
 
@@ -7,13 +7,8 @@ export default async function AdminLayout({
 }: {
   children: ReactNode;
 }) {
-  const { userId } = await auth();
-
-  // Redirect to sign-in if not authenticated
-  if (!userId) {
-    redirect("/sign-in");
-  }
-
+  // Middleware already handles authentication via auth.protect()
+  // If we reach here, the user is authenticated
   // Get current user to check admin status
   const user = await currentUser();
 
