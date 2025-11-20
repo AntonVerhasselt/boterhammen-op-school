@@ -3,6 +3,7 @@
 import { useAction } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import { useState, useEffect } from "react"
+import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { OrdersTable } from "@/components/dashboard/orders/OrdersTable"
 
@@ -47,8 +48,20 @@ export default function AdminOrdersPage() {
       <div className="container mx-auto py-8">
         <Card>
           <CardHeader>
-            <CardTitle>All Orders</CardTitle>
-            <CardDescription>View and manage all orders</CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>All Orders</CardTitle>
+                <CardDescription>View and manage all orders</CardDescription>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" disabled>
+                  Export to Excel
+                </Button>
+                <Button disabled>
+                  Download tickets
+                </Button>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-center py-8">
@@ -65,8 +78,20 @@ export default function AdminOrdersPage() {
       <div className="container mx-auto py-8">
         <Card>
           <CardHeader>
-            <CardTitle>All Orders</CardTitle>
-            <CardDescription>View and manage all orders</CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>All Orders</CardTitle>
+                <CardDescription>View and manage all orders</CardDescription>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" disabled>
+                  Export to Excel
+                </Button>
+                <Button disabled>
+                  Download ticket
+                </Button>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-center py-8">
@@ -82,9 +107,19 @@ export default function AdminOrdersPage() {
     <div className="container mx-auto py-8">
       <Card>
         <CardHeader>
-          <div>
-            <CardTitle>All Orders</CardTitle>
-            <CardDescription>View and manage all orders</CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>All Orders</CardTitle>
+              <CardDescription>View and manage all orders</CardDescription>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" onClick={() => {}}>
+                Export to Excel
+              </Button>
+              <Button onClick={() => {}}>
+                Download ticket
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
