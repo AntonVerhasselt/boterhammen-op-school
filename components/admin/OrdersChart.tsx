@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/chart";
 import { format, subDays, addDays, isToday, parseISO } from "date-fns";
 import { useState, useEffect } from "react";
-import type { FunctionReference } from "convex/server";
 
 const chartConfig = {
   orderCount: {
@@ -28,27 +27,7 @@ export function OrdersChart() {
   const startDate = format(subDays(today, 30), "yyyy-MM-dd");
   const endDate = format(addDays(today, 30), "yyyy-MM-dd");
 
-  const countOrdersPerDayRef = (
-    api.orders as {
-      count?: {
-        countOrdersPerDay: FunctionReference<
-          "action",
-          "public",
-          { startDate: string; endDate: string },
-          OrderCountData
-        >;
-      };
-    }
-  ).count?.countOrdersPerDay;
-
-  const countOrdersPerDay = useAction(
-    countOrdersPerDayRef as FunctionReference<
-      "action",
-      "public",
-      { startDate: string; endDate: string },
-      OrderCountData
-    >
-  );
+  const countOrdersPerDay = useAction(api.orders.count.countOrdersPerDay);
 
   const [data, setData] = useState<OrderCountData | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
