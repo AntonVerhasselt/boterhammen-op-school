@@ -74,7 +74,7 @@ export function OrderForm({ onSuccess }: OrderFormProps) {
 
   const children = useQuery(api.children.list.listMyChildren, {})
   const currentUser = useQuery(api.users.get.getMyUser)
-  const createOrder = useMutation(api.orders.createOrder)
+  const createOrder = useMutation(api.orders.create.createOrder)
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
