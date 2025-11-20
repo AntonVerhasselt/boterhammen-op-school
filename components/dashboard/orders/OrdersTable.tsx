@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import {
   Table,
   TableBody,
@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { formatDateRange } from "@/lib/date-utils"
+import { ChevronLeft, ChevronRight } from "lucide-react"
 
 function formatOrderType(orderType: "day-order" | "week-order" | "month-order"): string {
   switch (orderType) {
@@ -105,6 +106,13 @@ export function OrdersTable({ orders }: OrdersTableProps) {
   const [orderTypeFilter, setOrderTypeFilter] = useState<string>("all")
   const [deliveryStatusFilter, setDeliveryStatusFilter] = useState<string>("all")
   const [paymentStatusFilter, setPaymentStatusFilter] = useState<string>("all")
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage, setItemsPerPage] = useState(10)
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [childNameFilter, orderTypeFilter, deliveryStatusFilter, paymentStatusFilter])
 
   // Reset all filters
   const resetFilters = () => {
@@ -112,6 +120,7 @@ export function OrdersTable({ orders }: OrdersTableProps) {
     setOrderTypeFilter("all")
     setDeliveryStatusFilter("all")
     setPaymentStatusFilter("all")
+    setCurrentPage(1)
   }
 
   // Filter orders based on selected filters
@@ -149,6 +158,23 @@ export function OrdersTable({ orders }: OrdersTableProps) {
       return true
     })
   }, [orders, childNameFilter, orderTypeFilter, deliveryStatusFilter, paymentStatusFilter])
+
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredOrders.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const paginatedOrders = useMemo(() => {
+    return filteredOrders.slice(startIndex, endIndex)
+  }, [filteredOrders, startIndex, endIndex])
+
+  // Pagination handlers
+  const goToPreviousPage = () => {
+    setCurrentPage((prev) => Math.max(1, prev - 1))
+  }
+
+  const goToNextPage = () => {
+    setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+  }
 
   return (
     <div className="space-y-4">
@@ -218,7 +244,9 @@ export function OrdersTable({ orders }: OrdersTableProps) {
       {/* Results count and reset button */}
       <div className="flex items-center justify-between">
         <div className="text-sm text-muted-foreground">
-          Showing {filteredOrders.length} of {orders.length} orders
+          Showing {filteredOrders.length === 0 ? 0 : startIndex + 1}-
+          {Math.min(endIndex, filteredOrders.length)} of {filteredOrders.length} orders
+          {filteredOrders.length !== orders.length && ` (${orders.length} total)`}
         </div>
         <Button
           variant="outline"
@@ -247,14 +275,18 @@ export function OrdersTable({ orders }: OrdersTableProps) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {filteredOrders.length === 0 ? (
+          {paginatedOrders.length === 0 ? (
             <TableRow>
               <TableCell colSpan={5} className="text-center py-8">
-                <p className="text-muted-foreground">No orders match the selected filters.</p>
+                <p className="text-muted-foreground">
+                  {filteredOrders.length === 0
+                    ? "No orders match the selected filters."
+                    : "No orders on this page."}
+                </p>
               </TableCell>
             </TableRow>
           ) : (
-            filteredOrders.map((order) => (
+            paginatedOrders.map((order) => (
               <TableRow key={order._id}>
                 <TableCell className="font-medium">
                   {order.childName}
@@ -282,6 +314,56 @@ export function OrdersTable({ orders }: OrdersTableProps) {
           )}
         </TableBody>
       </Table>
+
+      {/* Pagination Controls */}
+      {filteredOrders.length > 0 && (
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-muted-foreground">Items per page:</label>
+            <Select
+              value={itemsPerPage.toString()}
+              onValueChange={(value) => {
+                setItemsPerPage(Number(value))
+                setCurrentPage(1)
+              }}
+            >
+              <SelectTrigger className="w-[80px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="10">10</SelectItem>
+                <SelectItem value="25">25</SelectItem>
+                <SelectItem value="50">50</SelectItem>
+                <SelectItem value="100">100</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={goToPreviousPage}
+              disabled={currentPage === 1}
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Previous
+            </Button>
+            <div className="text-sm text-muted-foreground">
+              Page {currentPage} of {totalPages}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={goToNextPage}
+              disabled={currentPage === totalPages}
+            >
+              Next
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
