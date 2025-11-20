@@ -21,7 +21,7 @@ export default function AdminOrdersPage() {
       deliveryStatus: "ordered" | "in-progress" | "delivered" | "cancelled"
       paymentStatus: "pending" | "paid" | "refunded" | "failed" | "cancelled"
     }>
-  >()
+  >([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -123,12 +123,12 @@ export default function AdminOrdersPage() {
           </div>
         </CardHeader>
         <CardContent>
-          {orders && orders.length === 0 ? (
+          {orders.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-muted-foreground">No orders found.</p>
             </div>
           ) : (
-            orders && <OrdersTable orders={orders} />
+            <OrdersTable orders={orders} />
           )}
         </CardContent>
       </Card>
