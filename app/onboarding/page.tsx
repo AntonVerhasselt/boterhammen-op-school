@@ -65,7 +65,7 @@ const phoneInputStyles = [
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const createUser = useMutation(api.users.createMyUser);
+  const createUser = useMutation(api.users.create.createMyUser);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),

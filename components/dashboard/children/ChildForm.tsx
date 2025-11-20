@@ -422,8 +422,16 @@ export function ChildForm({ childId, onSuccess }: ChildFormProps) {
                 <FormItem>
                   <FormLabel>Bread Type</FormLabel>
                   <Select
-                    onValueChange={field.onChange}
-                    value={field.value}
+                    onValueChange={(value) => {
+                      // Ignore empty values during initialization
+                      if (isInitializingRef.current && !value) {
+                        return;
+                      }
+                      if (value) {
+                        field.onChange(value);
+                      }
+                    }}
+                    value={field.value || undefined}
                   >
                     <FormControl>
                       <SelectTrigger>
