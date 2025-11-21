@@ -26,7 +26,7 @@ export function DayPicker({ selectedDate, onDateChange, unavailableDates }: DayP
     const maxDate = getMaxDate()
     maxDate.setHours(23, 59, 59, 999)
 
-    if (date < today || date > maxDate) return true
+    if (date <= today || date > maxDate) return true
 
     // Check if date is in unavailable dates
     return unavailableDates.some((unavailableDate) => date.toDateString() === unavailableDate.toDateString())

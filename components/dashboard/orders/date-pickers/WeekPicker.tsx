@@ -32,7 +32,7 @@ export function WeekPicker({ selectedDate, onDateChange, unavailableDates }: Wee
     today.setHours(0, 0, 0, 0)
     const maxDate = getMaxDate()
     maxDate.setHours(23, 59, 59, 999)
-    return weekStart < today || weekStart > maxDate
+    return weekStart <= today || weekStart > maxDate
   }
 
   const countAvailableDaysInWeek = (weekStart: Date) => {

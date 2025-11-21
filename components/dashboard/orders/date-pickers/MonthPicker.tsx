@@ -16,12 +16,15 @@ export function MonthPicker({ selectedDate, onDateChange, unavailableDates }: Mo
 
   const isMonthDisabled = (monthIndex: number) => {
     const today = new Date()
+    today.setHours(0, 0, 0, 0)
     const maxDate = new Date()
     maxDate.setMonth(maxDate.getMonth() + 3)
+    maxDate.setHours(23, 59, 59, 999)
 
     const monthDate = new Date(currentYear, monthIndex, 1)
+    monthDate.setHours(0, 0, 0, 0)
 
-    return monthDate < today || monthDate > maxDate
+    return monthDate <= today || monthDate > maxDate
   }
 
   const countAvailableDaysInMonth = (monthIndex: number) => {
