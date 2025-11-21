@@ -90,15 +90,17 @@ export function calculateEndDate(
   switch (orderType) {
     case "day-order":
       return new Date(startDate);
-    case "week-order":
+    case "week-order": {
       // WeekPicker selects Monday, so add 6 days to get Sunday (end of week)
       const weekEnd = new Date(startDate);
       weekEnd.setDate(weekEnd.getDate() + 6);
       return weekEnd;
-    case "month-order":
+    }
+    case "month-order": {
       // MonthPicker selects first day of month, so get last day of that month
       const monthEnd = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0);
       return monthEnd;
+    }
     default:
       return new Date(startDate);
   }
