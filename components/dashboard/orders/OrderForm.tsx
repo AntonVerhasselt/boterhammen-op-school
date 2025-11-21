@@ -8,8 +8,7 @@ import { useQuery, useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import { Id } from "@/convex/_generated/dataModel"
 import { useRouter } from "next/navigation"
-import { format } from "date-fns"
-import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react"
+import { ChevronLeft, ChevronRight } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -36,20 +35,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { Calendar } from "@/components/ui/calendar"
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import { cn } from "@/lib/utils"
-import {
-  isWorkday,
   calculateEndDate,
   formatDateToISO,
-  formatDateReadable,
 } from "@/lib/date-utils"
 import { OrderStepper } from "./OrderStepper"
+import { DayPicker } from "./date-pickers/DayPicker"
+import { WeekPicker } from "./date-pickers/WeekPicker"
+import { MonthPicker } from "./date-pickers/MonthPicker"
 
 const formSchema = z.object({
   childId: z.string().min(1, "Child is required"),
@@ -83,6 +76,7 @@ interface OrderFormProps {
 export function OrderForm({ onSuccess }: OrderFormProps) {
   const router = useRouter()
   const [step, setStep] = React.useState(1)
+  const [unavailableDates, setUnavailableDates] = React.useState<Date[]>([])
 
   const children = useQuery(api.children.list.listMyChildren, {})
   const currentUser = useQuery(api.users.get.getMyUser)
@@ -119,24 +113,61 @@ export function OrderForm({ onSuccess }: OrderFormProps) {
     return calculateEndDate(selectedStartDate, selectedOrderType)
   }, [selectedStartDate, selectedOrderType])
 
-  // Disable dates that are not workdays or are in the past/today
-  const disabledDates = React.useCallback(
-    (date: Date) => {
-      const today = new Date()
-      today.setHours(0, 0, 0, 0)
-      const dateToCheck = new Date(date)
-      dateToCheck.setHours(0, 0, 0, 0)
+  // Generate unavailable dates (Wednesdays and weekends)
+  React.useEffect(() => {
+    const fetchUnavailableDates = async () => {
+      try {
+        // TODO: Replace with real API endpoint when ready
+        // Mock API call - replace with real API when ready
+        const mockUnavailableDates: Date[] = [
+          // All Wednesdays and weekends (Saturdays and Sundays)
+          // December 12, 21, 25
+          new Date(2025, 11, 12), // Dec 12
+          new Date(2025, 11, 21), // Dec 21
+          new Date(2025, 11, 25), // Dec 25
+          // January and February - all Wednesdays and weekends
+          new Date(2026, 0, 3), // Jan 3 (Wed)
+          new Date(2026, 0, 4), // Jan 4 (Sun)
+          new Date(2026, 0, 10), // Jan 10 (Sat)
+          new Date(2026, 0, 11), // Jan 11 (Sun)
+          new Date(2026, 0, 17), // Jan 17 (Sat)
+          new Date(2026, 0, 18), // Jan 18 (Sun)
+          new Date(2026, 0, 24), // Jan 24 (Sat)
+          new Date(2026, 0, 25), // Jan 25 (Sun)
+          new Date(2026, 0, 31), // Jan 31 (Sat)
+          new Date(2026, 1, 1), // Feb 1 (Sun)
+          new Date(2026, 1, 7), // Feb 7 (Sat)
+          new Date(2026, 1, 8), // Feb 8 (Sun)
+          new Date(2026, 1, 14), // Feb 14 (Sat)
+          new Date(2026, 1, 15), // Feb 15 (Sun)
+          new Date(2026, 1, 21), // Feb 21 (Sat)
+          new Date(2026, 1, 22), // Feb 22 (Sun)
+          new Date(2026, 1, 28), // Feb 28 (Sat)
+        ]
 
-      // Disable past dates and today
-      if (dateToCheck <= today) {
-        return true
+        // Generate all Wednesdays and weekends for next 3 months
+        const today = new Date()
+        const maxDate = new Date()
+        maxDate.setMonth(maxDate.getMonth() + 3)
+
+        const currentDate = new Date(today)
+        while (currentDate <= maxDate) {
+          const dayOfWeek = currentDate.getDay()
+          // 3 is Wednesday, 6 is Saturday, 0 is Sunday
+          if (dayOfWeek === 3 || dayOfWeek === 6 || dayOfWeek === 0) {
+            mockUnavailableDates.push(new Date(currentDate))
+          }
+          currentDate.setDate(currentDate.getDate() + 1)
+        }
+
+        setUnavailableDates(mockUnavailableDates)
+      } catch (error) {
+        console.error("Failed to fetch unavailable dates:", error)
       }
+    }
 
-      // Disable non-workdays
-      return !isWorkday(dateToCheck)
-    },
-    []
-  )
+    fetchUnavailableDates()
+  }, [])
 
   // Track the last child ID to only populate preferences when child changes
   const lastChildIdRef = React.useRef<string>("")
@@ -498,7 +529,11 @@ export function OrderForm({ onSuccess }: OrderFormProps) {
                     <FormItem>
                       <FormLabel>Order Type</FormLabel>
                       <Select
-                        onValueChange={field.onChange}
+                        onValueChange={(value) => {
+                          field.onChange(value)
+                          // Reset startDate when order type changes
+                          form.resetField("startDate", { defaultValue: undefined })
+                        }}
                         value={field.value}
                       >
                         <FormControl>
@@ -519,50 +554,78 @@ export function OrderForm({ onSuccess }: OrderFormProps) {
                   )}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="startDate"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Start Date</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant={"outline"}
-                              className={cn(
-                                "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
-                              )}
-                            >
-                              {field.value ? (
-                                format(field.value, "PPP")
-                              ) : (
-                                <span>Pick a date</span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            disabled={disabledDates}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      {endDate && (
-                        <p className="text-sm text-muted-foreground mt-2">
-                          End Date: {formatDateReadable(endDate)}
-                        </p>
-                      )}
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                {selectedOrderType && (
+                  <div className="space-y-2">
+                    <FormLabel>
+                      {selectedOrderType === "day-order" && "Select a Date"}
+                      {selectedOrderType === "week-order" && "Select a Week"}
+                      {selectedOrderType === "month-order" && "Select a Month"}
+                    </FormLabel>
+
+                    {selectedOrderType === "day-order" && (
+                      <FormField
+                        control={form.control}
+                        name="startDate"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <DayPicker
+                                selectedDate={field.value || null}
+                                onDateChange={(date) => {
+                                  field.onChange(date)
+                                }}
+                                unavailableDates={unavailableDates}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )}
+
+                    {selectedOrderType === "week-order" && (
+                      <FormField
+                        control={form.control}
+                        name="startDate"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <WeekPicker
+                                selectedDate={field.value || null}
+                                onDateChange={(date) => {
+                                  field.onChange(date)
+                                }}
+                                unavailableDates={unavailableDates}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )}
+
+                    {selectedOrderType === "month-order" && (
+                      <FormField
+                        control={form.control}
+                        name="startDate"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <MonthPicker
+                                selectedDate={field.value || null}
+                                onDateChange={(date) => {
+                                  field.onChange(date)
+                                }}
+                                unavailableDates={unavailableDates}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )}
+                  </div>
+                )}
 
                 {form.formState.errors.root && (
                   <p className="text-sm text-destructive">
