@@ -27,12 +27,12 @@ export function MonthPicker({ selectedDate, onDateChange, unavailableDates }: Mo
     return monthDate <= today || monthDate > maxDate
   }
 
-  const countAvailableDaysInMonth = (monthIndex: number) => {
+  const countAvailableDaysInMonth = (monthIndex: number, year: number) => {
     let count = 0
-    const daysInMonth = new Date(currentYear, monthIndex + 1, 0).getDate()
+    const daysInMonth = new Date(year, monthIndex + 1, 0).getDate()
 
     for (let day = 1; day <= daysInMonth; day++) {
-      const date = new Date(currentYear, monthIndex, day)
+      const date = new Date(year, monthIndex, day)
 
       const isUnavailable = unavailableDates.some(
         (unavailableDate) => date.toDateString() === unavailableDate.toDateString(),
@@ -127,7 +127,7 @@ export function MonthPicker({ selectedDate, onDateChange, unavailableDates }: Mo
         {selectedDate && (
           <div className="text-sm text-muted-foreground pt-2 border-t">
             Selected: {selectedDate.toLocaleString("default", { month: "long", year: "numeric" })} -{" "}
-            {countAvailableDaysInMonth(selectedDate.getMonth())} days selected
+            {countAvailableDaysInMonth(selectedDate.getMonth(), selectedDate.getFullYear())} days selected
           </div>
         )}
       </div>
