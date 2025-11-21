@@ -38,6 +38,7 @@ import {
 import {
   calculateEndDate,
   formatDateToISO,
+  formatDateRange,
 } from "@/lib/date-utils"
 import { OrderStepper } from "./OrderStepper"
 import { DayPicker } from "./date-pickers/DayPicker"
@@ -67,10 +68,49 @@ const step1Schema = z.object({
   butter: z.boolean(),
 })
 
+// Step 2 schema: order type and date
+const step2Schema = z.object({
+  orderType: z.enum(["day-order", "week-order", "month-order"]),
+  startDate: z.date({
+    message: "Start date is required",
+  }),
+})
+
 type FormValues = z.infer<typeof formSchema>
 
 interface OrderFormProps {
   onSuccess?: () => void
+}
+
+// Helper functions for formatting
+function formatOrderType(orderType: "day-order" | "week-order" | "month-order"): string {
+  switch (orderType) {
+    case "day-order":
+      return "Day Order"
+    case "week-order":
+      return "Week Order"
+    case "month-order":
+      return "Month Order"
+    default:
+      return orderType
+  }
+}
+
+function formatBreadType(breadType: "white" | "brown" | "none"): string {
+  switch (breadType) {
+    case "white":
+      return "White"
+    case "brown":
+      return "Brown"
+    case "none":
+      return "No preference"
+    default:
+      return breadType
+  }
+}
+
+function formatBoolean(value: boolean): string {
+  return value ? "Yes" : "No"
 }
 
 export function OrderForm({ onSuccess }: OrderFormProps) {
@@ -244,15 +284,45 @@ export function OrderForm({ onSuccess }: OrderFormProps) {
     setStep(2)
   }
 
+  const onStep2Next = async () => {
+    // Clear any previous errors
+    form.clearErrors()
+
+    const step2Fields = {
+      orderType: form.getValues("orderType"),
+      startDate: form.getValues("startDate"),
+    }
+
+    const result = step2Schema.safeParse(step2Fields)
+    if (!result.success) {
+      result.error.issues.forEach((issue) => {
+        const fieldName = issue.path[0] as keyof FormValues
+        form.setError(fieldName, {
+          message: issue.message,
+        })
+      })
+      return
+    }
+
+    // Values are already in the form, just move to next step
+    setStep(3)
+  }
+
   const onStep2Back = () => {
     // Form values are automatically preserved by react-hook-form
     // Just navigate back to step 1
     setStep(1)
   }
 
+  const onStep3Back = () => {
+    // Form values are automatically preserved by react-hook-form
+    // Just navigate back to step 2
+    setStep(2)
+  }
+
   const onSubmit = async (values: FormValues) => {
-    // Only allow submission on step 2
-    if (step !== 2) {
+    // Only allow submission on step 3
+    if (step !== 3) {
       return
     }
 
@@ -520,7 +590,7 @@ export function OrderForm({ onSuccess }: OrderFormProps) {
                   </Button>
                 </div>
               </>
-            ) : (
+            ) : step === 2 ? (
               <>
                 <FormField
                   control={form.control}
@@ -638,6 +708,110 @@ export function OrderForm({ onSuccess }: OrderFormProps) {
                     type="button"
                     variant="outline"
                     onClick={onStep2Back}
+                    disabled={form.formState.isSubmitting}
+                  >
+                    <ChevronLeft className="mr-2 h-4 w-4" />
+                    Back
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={onStep2Next}
+                    disabled={form.formState.isSubmitting}
+                    className="flex-1"
+                  >
+                    Next
+                    <ChevronRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Step 3: Order Overview */}
+                <div className="space-y-6">
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold">Child Information</h3>
+                    <div className="space-y-3 pl-4 border-l-2">
+                      <div>
+                        <span className="text-sm font-medium text-muted-foreground">Child:</span>
+                        <p className="text-base mt-1">
+                          {selectedChild
+                            ? `${selectedChild.firstName} ${selectedChild.lastName}`
+                            : "Not selected"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold">Order Details</h3>
+                    <div className="space-y-3 pl-4 border-l-2">
+                      <div>
+                        <span className="text-sm font-medium text-muted-foreground">Order Type:</span>
+                        <p className="text-base mt-1">
+                          {selectedOrderType
+                            ? formatOrderType(selectedOrderType)
+                            : "Not selected"}
+                        </p>
+                      </div>
+                      <div>
+                        <span className="text-sm font-medium text-muted-foreground">Date Range:</span>
+                        <p className="text-base mt-1">
+                          {selectedStartDate && endDate
+                            ? formatDateRange(selectedStartDate, endDate)
+                            : "Not selected"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold">Preferences</h3>
+                    <div className="space-y-3 pl-4 border-l-2">
+                      <div>
+                        <span className="text-sm font-medium text-muted-foreground">Notes:</span>
+                        <p className="text-base mt-1">
+                          {form.watch("notes") || "None"}
+                        </p>
+                      </div>
+                      <div>
+                        <span className="text-sm font-medium text-muted-foreground">Allergies:</span>
+                        <p className="text-base mt-1">
+                          {form.watch("allergies") || "None"}
+                        </p>
+                      </div>
+                      <div>
+                        <span className="text-sm font-medium text-muted-foreground">Bread Type:</span>
+                        <p className="text-base mt-1">
+                          {formatBreadType(form.watch("breadType"))}
+                        </p>
+                      </div>
+                      <div>
+                        <span className="text-sm font-medium text-muted-foreground">Crust:</span>
+                        <p className="text-base mt-1">
+                          {formatBoolean(form.watch("crust"))}
+                        </p>
+                      </div>
+                      <div>
+                        <span className="text-sm font-medium text-muted-foreground">Butter:</span>
+                        <p className="text-base mt-1">
+                          {formatBoolean(form.watch("butter"))}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {form.formState.errors.root && (
+                  <p className="text-sm text-destructive">
+                    {form.formState.errors.root.message}
+                  </p>
+                )}
+
+                <div className="flex gap-4 pt-6 border-t">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={onStep3Back}
                     disabled={form.formState.isSubmitting}
                   >
                     <ChevronLeft className="mr-2 h-4 w-4" />
