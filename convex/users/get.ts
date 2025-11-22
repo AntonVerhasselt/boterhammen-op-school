@@ -12,11 +12,7 @@ export const getMyUser = query({
       phoneNumber: v.string(),
       email: v.string(),
       clerkUserId: v.string(),
-      subscription: v.optional(v.object({
-        stripePaymentIntentId: v.optional(v.string()),
-        activatedAt: v.optional(v.string()),
-        expiresAt: v.optional(v.string()),
-      })),
+      accessExpiresAt: v.optional(v.string()),
     }),
     v.null()
   ),

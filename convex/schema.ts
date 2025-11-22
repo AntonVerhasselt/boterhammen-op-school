@@ -42,14 +42,10 @@ export default defineSchema({
     email: v.string(),
     clerkUserId: v.string(),
     stripeCustomerId: v.optional(v.string()),
-    subscription: v.optional(v.object({
-      stripePaymentIntentId: v.optional(v.string()),
-      activatedAt: v.optional(v.string()), // ISO 8601 format: YYYY-MM-DD
-      expiresAt: v.optional(v.string()), // ISO 8601 format: YYYY-MM-DD => last day of the next June month (end of the next school year)
-    })),
+    accessExpiresAt: v.optional(v.string()), // ISO 8601 format: YYYY-MM-DD => last day of the next June month (end of the next school year)
   }).index("by_clerkUserId", ["clerkUserId"])
   .index("by_stripeCustomerId", ["stripeCustomerId"])
-  .index("by_subscription_expiresAt", ["subscription.expiresAt"]),
+  .index("by_accessExpiresAt", ["accessExpiresAt"]),
 
   children: defineTable({
     parentId: v.id("users"),
