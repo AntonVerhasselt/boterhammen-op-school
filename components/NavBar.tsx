@@ -8,6 +8,11 @@ import { Plus } from "lucide-react";
 
 export default function NavBar() {
   const pathname = usePathname();
+
+  if (pathname?.startsWith("/onboarding")) {
+    return null;
+  }
+
   const isAdminRoute = pathname?.startsWith("/admin");
 
   return (
