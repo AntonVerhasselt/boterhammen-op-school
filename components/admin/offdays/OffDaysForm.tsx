@@ -32,7 +32,9 @@ import { SchoolMultiSelect } from "./SchoolMultiSelect";
 
 const formSchema = z
   .object({
-    schoolIds: z.array(z.string()).min(1, "Select at least one school"),
+    schoolIds: z
+      .array(z.custom<Id<"schools">>((val) => typeof val === "string"))
+      .min(1, "Select at least one school"),
     startDate: z.date({ message: "Start date is required" }),
     endDate: z.date({ message: "End date is required" }),
     reason: z.string().optional(),
@@ -64,7 +66,7 @@ export function OffDaysForm() {
       await createOffDays({
         startDate: formatDateToISO(values.startDate),
         endDate: formatDateToISO(values.endDate),
-        schoolIds: values.schoolIds as Id<"schools">[],
+        schoolIds: values.schoolIds,
         reason: values.reason,
       });
       router.push("/admin/offdays");
