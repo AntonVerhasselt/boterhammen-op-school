@@ -8,10 +8,10 @@ import { Card } from "@/components/ui/card"
 interface WeekPickerProps {
   selectedDate: Date | null
   onDateChange: (date: Date) => void
-  unavailableDates: Date[]
+  offDays: Date[]
 }
 
-export function WeekPicker({ selectedDate, onDateChange, unavailableDates }: WeekPickerProps) {
+export function WeekPicker({ selectedDate, onDateChange, offDays }: WeekPickerProps) {
   const [currentDate, setCurrentDate] = useState(new Date())
 
   const getMaxDate = () => {
@@ -41,11 +41,11 @@ export function WeekPicker({ selectedDate, onDateChange, unavailableDates }: Wee
       const date = new Date(weekStart)
       date.setDate(date.getDate() + i)
 
-      const isUnavailable = unavailableDates.some(
-        (unavailableDate) => date.toDateString() === unavailableDate.toDateString(),
+      const isOffDay = offDays.some(
+        (offDay) => date.toDateString() === offDay.toDateString(),
       )
 
-      if (!isUnavailable) {
+      if (!isOffDay) {
         count++
       }
     }

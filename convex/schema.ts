@@ -41,7 +41,11 @@ export default defineSchema({
     phoneNumber: v.string(),
     email: v.string(),
     clerkUserId: v.string(),
-  }).index("by_clerkUserId", ["clerkUserId"]),
+    stripeCustomerId: v.optional(v.string()),
+    accessExpiresAt: v.optional(v.string()), // ISO 8601 format: YYYY-MM-DD => last day of the next June month (end of the next school year)
+  }).index("by_clerkUserId", ["clerkUserId"])
+  .index("by_stripeCustomerId", ["stripeCustomerId"])
+  .index("by_accessExpiresAt", ["accessExpiresAt"]),
 
   children: defineTable({
     parentId: v.id("users"),
@@ -87,4 +91,12 @@ export default defineSchema({
     schoolId: v.id("schools"),
     name: v.string(),
   }).index("by_schoolId", ["schoolId"]),
+
+  offDays: defineTable({
+    date: v.string(),
+    schoolId: v.id("schools"),
+    reason: v.optional(v.string()),
+  }).index("by_date", ["date"])
+  .index("by_schoolId", ["schoolId"])
+  .index("by_schoolId_and_date", ["schoolId", "date"]),
 });
