@@ -91,6 +91,7 @@ export default defineSchema({
   offDays: defineTable({
     date: v.string(),
     schoolId: v.id("schools"),
+    reason: v.optional(v.string()),
   }).index("by_date", ["date"])
   .index("by_schoolId", ["schoolId"])
   .index("by_schoolId_and_date", ["schoolId", "date"]),

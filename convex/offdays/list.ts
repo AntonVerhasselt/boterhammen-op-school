@@ -64,3 +64,62 @@ export const listFutureOffDaysByChildId = query({
     return Array.from(offDayDates).sort();
   },
 });
+
+/**
+ * Get all future off days with school names.
+ * Returns all offDays from today onwards with their schoolId, schoolName, and reason.
+ */
+export const listAllFutureOffDays = query({
+  args: {},
+  returns: v.array(
+    v.object({
+      _id: v.id("offDays"),
+      _creationTime: v.number(),
+      date: v.string(),
+      schoolId: v.id("schools"),
+      schoolName: v.string(),
+      reason: v.optional(v.string()),
+    })
+  ),
+  handler: async (ctx) => {
+    // Helper to format date as YYYY-MM-DD using UTC to avoid timezone issues
+    const formatDate = (date: Date): string => {
+      const year = date.getUTCFullYear();
+      const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+      const day = String(date.getUTCDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    };
+
+    // Get today's date in YYYY-MM-DD format
+    const today = formatDate(new Date());
+
+    // Query all future offDays using the by_date index
+    const offDays = await ctx.db
+      .query("offDays")
+      .withIndex("by_date", (q) => q.gte("date", today))
+      .collect();
+
+    // Get unique schoolIds from the offDays
+    const schoolIds = [...new Set(offDays.map((day) => day.schoolId))];
+
+    // Fetch all schools for the unique schoolIds (inline query)
+    const schools = await Promise.all(
+      schoolIds.map((id) => ctx.db.get(id))
+    );
+
+    // Create a map of schoolId to schoolName
+    const schoolMap = new Map(
+      schools.filter((s) => s !== null).map((s) => [s!._id, s!.name])
+    );
+
+    // Combine offDays with school names
+    return offDays.map((offDay) => ({
+      _id: offDay._id,
+      _creationTime: offDay._creationTime,
+      date: offDay.date,
+      schoolId: offDay.schoolId,
+      schoolName: schoolMap.get(offDay.schoolId) || "Unknown",
+      reason: offDay.reason,
+    }));
+  },
+});
