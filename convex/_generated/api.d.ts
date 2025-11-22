@@ -14,6 +14,7 @@ import type * as children_get from "../children/get.js";
 import type * as children_list from "../children/list.js";
 import type * as children_update from "../children/update.js";
 import type * as crons from "../crons.js";
+import type * as offdays_list from "../offdays/list.js";
 import type * as orders_admin from "../orders/admin.js";
 import type * as orders_count from "../orders/count.js";
 import type * as orders_create from "../orders/create.js";
@@ -36,6 +37,7 @@ declare const fullApi: ApiFromModules<{
   "children/list": typeof children_list;
   "children/update": typeof children_update;
   crons: typeof crons;
+  "offdays/list": typeof offdays_list;
   "orders/admin": typeof orders_admin;
   "orders/count": typeof orders_count;
   "orders/create": typeof orders_create;

@@ -87,4 +87,11 @@ export default defineSchema({
     schoolId: v.id("schools"),
     name: v.string(),
   }).index("by_schoolId", ["schoolId"]),
+
+  offDays: defineTable({
+    date: v.string(),
+    schoolId: v.id("schools"),
+  }).index("by_date", ["date"])
+  .index("by_schoolId", ["schoolId"])
+  .index("by_schoolId_and_date", ["schoolId", "date"]),
 });
