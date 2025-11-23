@@ -1,5 +1,6 @@
 import { mutation } from "../_generated/server";
 import { v } from "convex/values";
+import { getUserByClerkUserId } from "../../lib/clerk-id";
 
 /**
  * Create a new order for the logged-in parent.
@@ -28,20 +29,7 @@ export const createOrder = mutation({
   },
   returns: v.id("orders"),
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("User must be authenticated to create an order");
-    }
-
-    const clerkUserId = identity.subject;
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_clerkUserId", (q) => q.eq("clerkUserId", clerkUserId))
-      .first();
-
-    if (!user) {
-      throw new Error("User profile not found");
-    }
+    const user = await getUserByClerkUserId(ctx);
 
     // Verify child exists and belongs to user
     const child = await ctx.db.get(args.childId);

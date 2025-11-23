@@ -22,10 +22,14 @@ import type * as orders_count from "../orders/count.js";
 import type * as orders_create from "../orders/create.js";
 import type * as orders_list from "../orders/list.js";
 import type * as orders_update from "../orders/update.js";
+import type * as payments_create from "../payments/create.js";
 import type * as schools_list from "../schools/list.js";
 import type * as schoolsandclasses from "../schoolsandclasses.js";
+import type * as stripe_checkCustomer from "../stripe/checkCustomer.js";
+import type * as stripe_payAccessFee from "../stripe/payAccessFee.js";
 import type * as users_create from "../users/create.js";
 import type * as users_get from "../users/get.js";
+import type * as users_update from "../users/update.js";
 
 import type {
   ApiFromModules,
@@ -48,10 +52,14 @@ declare const fullApi: ApiFromModules<{
   "orders/create": typeof orders_create;
   "orders/list": typeof orders_list;
   "orders/update": typeof orders_update;
+  "payments/create": typeof payments_create;
   "schools/list": typeof schools_list;
   schoolsandclasses: typeof schoolsandclasses;
+  "stripe/checkCustomer": typeof stripe_checkCustomer;
+  "stripe/payAccessFee": typeof stripe_payAccessFee;
   "users/create": typeof users_create;
   "users/get": typeof users_get;
+  "users/update": typeof users_update;
 }>;
 
 /**

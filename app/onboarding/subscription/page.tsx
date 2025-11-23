@@ -8,8 +8,35 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useAction } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { useState } from "react";
 
 export default function SubscriptionPage() {
+  const payAccessFee = useAction(api.stripe.payAccessFee.payAccessFee);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handlePayClick = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const { url } = await payAccessFee({});
+      if (!url) {
+        const errorMessage = "Failed to create checkout session. Please try again or contact support.";
+        console.error("Error: payAccessFee returned no URL");
+        setError(errorMessage);
+        return;
+      }
+      window.location.href = url;
+    } catch (error) {
+      console.error("Error creating checkout session:", error);
+      setError("Failed to create checkout session. Please try again or contact support.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
       <Card className="w-full max-w-md">
@@ -29,11 +56,18 @@ export default function SubscriptionPage() {
             </p>
           </div>
           
+          {error && (
+            <div className="text-sm text-destructive text-center">
+              <p>{error}</p>
+            </div>
+          )}
+          
           <Button 
             className="w-full" 
-            onClick={() => console.log("Redirect to Stripe")}
+            onClick={handlePayClick}
+            disabled={isLoading}
           >
-            Pay €10 via Stripe
+            {isLoading ? "Loading..." : "Pay €10 via Stripe"}
           </Button>
         </CardContent>
       </Card>

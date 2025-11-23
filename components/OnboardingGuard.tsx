@@ -44,7 +44,7 @@ export default function OnboardingGuard({
     }
 
     // Don't redirect if we're already on the onboarding pages
-    if (pathname === "/onboarding" || pathname === "/onboarding/subscription") {
+    if (pathname.startsWith("/onboarding")) {
       return;
     }
 
@@ -71,7 +71,7 @@ export default function OnboardingGuard({
   }
 
   // If on onboarding pages, show children
-  if (pathname === "/onboarding" || pathname === "/onboarding/subscription") {
+  if (pathname.startsWith("/onboarding")) {
     return <>{children}</>;
   }
 

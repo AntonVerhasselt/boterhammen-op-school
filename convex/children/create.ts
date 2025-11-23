@@ -1,5 +1,6 @@
 import { mutation } from "../_generated/server";
 import { v } from "convex/values";
+import { getUserByClerkUserId } from "../../lib/clerk-id";
 
 /**
  * Validates and trims a name field.
@@ -58,20 +59,7 @@ export const createChild = mutation({
   },
   returns: v.id("children"),
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("User must be authenticated to create a child");
-    }
-
-    const clerkUserId = identity.subject;
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_clerkUserId", (q) => q.eq("clerkUserId", clerkUserId))
-      .first();
-
-    if (!user) {
-      throw new Error("User profile not found");
-    }
+    const user = await getUserByClerkUserId(ctx);
 
     // Validate and trim names
     const trimmedFirstName = validateName(args.firstName, "First name");
