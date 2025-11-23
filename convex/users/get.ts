@@ -1,6 +1,5 @@
 import { query, internalQuery } from "../_generated/server";
 import { v } from "convex/values";
-import { getUserByClerkUserId as getUserByClerkUserIdHelper } from "../../lib/clerk-id";
 
 export const getMyUser = query({
   args: {},
@@ -62,26 +61,5 @@ export const getUserByClerkUserId = internalQuery({
       .first();
 
     return user ?? null;
-  },
-});
-
-/**
- * Internal query to get the authenticated user using the helper function.
- */
-export const getAuthenticatedUser = internalQuery({
-  args: {},
-  returns: v.object({
-    _id: v.id("users"),
-    _creationTime: v.number(),
-    firstName: v.string(),
-    lastName: v.string(),
-    phoneNumber: v.string(),
-    email: v.string(),
-    clerkUserId: v.string(),
-    stripeCustomerId: v.optional(v.string()),
-    accessExpiresAt: v.optional(v.string()),
-  }),
-  handler: async (ctx) => {
-    return await getUserByClerkUserIdHelper(ctx);
   },
 });

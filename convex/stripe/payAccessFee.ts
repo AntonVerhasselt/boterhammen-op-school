@@ -82,7 +82,14 @@ export const payAccessFee = action({
       status: "pending",
     });
 
-    return { url: session.url! };
+    // Verify session URL is present before returning
+    if (!session.url) {
+      throw new Error(
+        `Stripe checkout session created but URL is missing. Session ID: ${session.id}`
+      );
+    }
+
+    return { url: session.url };
   },
 });
 
