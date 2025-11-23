@@ -45,6 +45,22 @@ export const updateUserAccess = mutation({
       throw new Error("User not found");
     }
 
+    // Fetch the payment record by session ID
+    // Use .unique() to surface duplicate session IDs (throws error if multiple found)
+    const payment = await ctx.db
+      .query("payments")
+      .withIndex("by_stripeCheckoutSessionId", (q) => q.eq("stripeCheckoutSessionId", args.sessionId))
+      .unique();
+
+    if (!payment) {
+      throw new Error("Payment not found");
+    }
+
+    // Verify the payment belongs to the authenticated user
+    if (payment.userId !== user._id) {
+      throw new Error("Payment does not belong to authenticated user");
+    }
+
     // Calculate the last day of the next June
     const now = new Date();
     const year = now.getMonth() >= 5 ? now.getFullYear() + 1 : now.getFullYear();
@@ -54,19 +70,10 @@ export const updateUserAccess = mutation({
     // Format as "YYYY-MM-DD"
     const formattedExpiresAt = expiresAt.toISOString().slice(0, 10);
 
+    // Only update accessExpiresAt and payment status when the payment belongs to the user
     await ctx.db.patch(user._id, {
       accessExpiresAt: formattedExpiresAt,
     });
-
-    // Update the payment record with the status paid
-    const payment = await ctx.db
-      .query("payments")
-      .withIndex("by_stripeCheckoutSessionId", (q) => q.eq("stripeCheckoutSessionId", args.sessionId))
-      .first();
-
-    if (!payment) {
-      throw new Error("Payment not found");
-    }
 
     await ctx.db.patch(payment._id, {
       status: "paid",
