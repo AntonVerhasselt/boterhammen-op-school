@@ -19,24 +19,30 @@ type UserWithStripeCustomerId = {
 };
 
 /**
- * Check if a Stripe customer exists for a user by clerkUserId.
+ * Check if a Stripe customer exists for the authenticated user.
  * If not, create one in Stripe and store the customerId in the database.
  * Returns both the stripeCustomerId and userId.
  */
 export const checkStripeCustomerByClerkUserId = action({
-  args: {
-    clerkUserId: v.string(),
-  },
+  args: {},
   returns: v.object({
     stripeCustomerId: v.string(),
     userId: v.id("users"),
   }),
-  handler: async (ctx, args): Promise<{ stripeCustomerId: string; userId: Id<"users"> }> => {
+  handler: async (ctx): Promise<{ stripeCustomerId: string; userId: Id<"users"> }> => {
+    // Get authenticated user's identity
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("User not authenticated");
+    }
+
+    const clerkUserId = identity.subject;
+
     // Get the user from the database
     const user: UserWithStripeCustomerId | null = await ctx.runQuery(
       internal.users.get.getUserByClerkUserId,
       {
-        clerkUserId: args.clerkUserId,
+        clerkUserId: clerkUserId,
       }
     );
 

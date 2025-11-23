@@ -24,9 +24,7 @@ export const payAccessFee = action({
     // Ensure Stripe customer exists and get userId
     const { stripeCustomerId, userId } = await ctx.runAction(
       api.stripe.checkCustomer.checkStripeCustomerByClerkUserId,
-      {
-        clerkUserId: clerkUserId,
-      }
+      {}
     );
 
     // Get base URL from environment
