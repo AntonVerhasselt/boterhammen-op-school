@@ -10,16 +10,22 @@ import { getStripeClient } from "../../lib/stripe-connection";
  * Returns the checkout session URL for redirect.
  */
 export const payAccessFee = action({
-  args: {
-    clerkUserId: v.string(),
-  },
+  args: {},
   returns: v.object({ url: v.string() }),
-  handler: async (ctx, args): Promise<{ url: string }> => {
+  handler: async (ctx): Promise<{ url: string }> => {
+    // Get user identity from Clerk
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthorized");
+    }
+
+    const clerkUserId = identity.subject;
+
     // Ensure Stripe customer exists and get userId
     const { stripeCustomerId, userId } = await ctx.runAction(
       api.stripe.checkCustomer.checkStripeCustomerByClerkUserId,
       {
-        clerkUserId: args.clerkUserId,
+        clerkUserId: clerkUserId,
       }
     );
 
@@ -53,7 +59,7 @@ export const payAccessFee = action({
       cancel_url: `${baseUrl}/onboarding/subscription`,
       metadata: {
         userId: userId,
-        clerkUserId: args.clerkUserId,
+        clerkUserId: clerkUserId,
         type: "access-fee",
       },
     });

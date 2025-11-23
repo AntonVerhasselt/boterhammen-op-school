@@ -10,23 +10,16 @@ import {
 } from "@/components/ui/card";
 import { useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { useAuth } from "@clerk/nextjs";
 import { useState } from "react";
 
 export default function SubscriptionPage() {
-  const { userId } = useAuth();
   const payAccessFee = useAction(api.stripe.payAccessFee.payAccessFee);
   const [isLoading, setIsLoading] = useState(false);
 
   const handlePayClick = async () => {
-    if (!userId) {
-      console.error("User not authenticated");
-      return;
-    }
-
     setIsLoading(true);
     try {
-      const { url } = await payAccessFee({ clerkUserId: userId });
+      const { url } = await payAccessFee({});
       if (url) {
         window.location.href = url;
       }
@@ -58,7 +51,7 @@ export default function SubscriptionPage() {
           <Button 
             className="w-full" 
             onClick={handlePayClick}
-            disabled={isLoading || !userId}
+            disabled={isLoading}
           >
             {isLoading ? "Loading..." : "Pay €10 via Stripe"}
           </Button>
