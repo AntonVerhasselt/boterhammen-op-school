@@ -3,6 +3,7 @@
 ## Development Tasks
 
 - [ ] Protect offDays mutations with checkAdmin (need to wrap the mutations in an action to do this)
+- [ ] Validate payments through Stripe webshooks, not only through success url
 - [ ] Make the menu navbar mobile friendly
 - [ ] Stripe integration
 - [ ] Email setup with Resend (mainly order confirmation email)
