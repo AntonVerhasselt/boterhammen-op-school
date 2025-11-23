@@ -6,6 +6,7 @@
 - [ ] Make the menu navbar mobile friendly
 - [ ] Stripe integration
 - [ ] Email setup with Resend (mainly order confirmation email)
+- [ ] Posthog analytics
 
 ## Product Marketing Ideas
 

@@ -19,7 +19,7 @@ const paymentStatus = v.union(
   v.literal("paid"),
   v.literal("refunded"),
   v.literal("failed"),
-  v.literal("cancelled")
+  v.literal("cancelled"),
 );
 
 // Delivery/fulfillment lifecycle
@@ -99,4 +99,23 @@ export default defineSchema({
   }).index("by_date", ["date"])
   .index("by_schoolId", ["schoolId"])
   .index("by_schoolId_and_date", ["schoolId", "date"]),
+
+  payments: defineTable({
+    userId: v.id("users"),
+    stripeCheckoutSessionId: v.string(),
+    stripePaymentIntentId: v.optional(v.string()), // Optional - set via webhook when payment completes
+    amount: v.number(), // in cents
+    currency: v.string(), // "eur"
+    type: v.union(
+      v.literal("access-fee"),
+      v.literal("order"),
+    ),
+    status: paymentStatus,
+    webhookProcessed: v.boolean(),
+  }).index("by_userId", ["userId"])
+  .index("by_stripeCheckoutSessionId", ["stripeCheckoutSessionId"])
+  .index("by_type", ["type"])
+  .index("by_status", ["status"])
+  .index("by_webhookProcessed", ["webhookProcessed"]),
+
 });
