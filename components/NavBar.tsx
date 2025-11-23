@@ -8,6 +8,11 @@ import { Plus } from "lucide-react";
 
 export default function NavBar() {
   const pathname = usePathname();
+
+  if (pathname?.startsWith("/onboarding")) {
+    return null;
+  }
+
   const isAdminRoute = pathname?.startsWith("/admin");
 
   return (
@@ -33,6 +38,18 @@ export default function NavBar() {
                 className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
               >
                 Orders
+              </Link>
+              <Link
+                href="/admin/offdays"
+                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Off days
+              </Link>
+              <Link
+                href="/admin/profit-calculator"
+                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Calculator
               </Link>
               <Button>
                 Download todays tickets

@@ -12,6 +12,7 @@ export const getMyUser = query({
       phoneNumber: v.string(),
       email: v.string(),
       clerkUserId: v.string(),
+      accessExpiresAt: v.optional(v.string()),
     }),
     v.null()
   ),

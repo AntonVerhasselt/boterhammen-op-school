@@ -5,6 +5,22 @@ import { api } from "@/convex/_generated/api";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
+/**
+ * Check if access is active.
+ * Access is active if accessExpiresAt exists and is >= today (inclusive).
+ */
+function isAccessActive(accessExpiresAt: string | undefined | null): boolean {
+  if (!accessExpiresAt) {
+    return false;
+  }
+
+  // Get today's date in YYYY-MM-DD format
+  const today = new Date().toISOString().split("T")[0];
+
+  // Compare dates as strings (ISO 8601 format allows lexicographic comparison)
+  return accessExpiresAt >= today;
+}
+
 export default function OnboardingGuard({
   children,
 }: {
@@ -27,8 +43,8 @@ export default function OnboardingGuard({
       return;
     }
 
-    // Don't redirect if we're already on the onboarding page
-    if (pathname === "/onboarding") {
+    // Don't redirect if we're already on the onboarding pages
+    if (pathname === "/onboarding" || pathname === "/onboarding/subscription") {
       return;
     }
 
@@ -40,6 +56,12 @@ export default function OnboardingGuard({
     // If user is authenticated but doesn't exist in database, redirect to onboarding
     if (currentUser === null) {
       router.replace("/onboarding");
+      return;
+    }
+
+    // If user exists but doesn't have active access, redirect to subscription page
+    if (!isAccessActive(currentUser.accessExpiresAt)) {
+      router.replace("/onboarding/subscription");
     }
   }, [currentUser, pathname, router, mounted]);
 
@@ -48,8 +70,13 @@ export default function OnboardingGuard({
     return null; // or a loading spinner
   }
 
-  // If on onboarding page or user exists, show children
-  if (pathname === "/onboarding" || currentUser !== null) {
+  // If on onboarding pages, show children
+  if (pathname === "/onboarding" || pathname === "/onboarding/subscription") {
+    return <>{children}</>;
+  }
+
+  // If user exists and has active access, show children
+  if (currentUser !== null && isAccessActive(currentUser.accessExpiresAt)) {
     return <>{children}</>;
   }
 

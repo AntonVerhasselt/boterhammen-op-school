@@ -116,7 +116,8 @@ function formatBoolean(value: boolean): string {
 export function OrderForm({ onSuccess }: OrderFormProps) {
   const router = useRouter()
   const [step, setStep] = React.useState(1)
-  const [unavailableDates, setUnavailableDates] = React.useState<Date[]>([])
+  const [offDays, setOffDays] = React.useState<Date[]>([])
+  const [offDaysLoading, setOffDaysLoading] = React.useState(false)
 
   const children = useQuery(api.children.list.listMyChildren, {})
   const currentUser = useQuery(api.users.get.getMyUser)
@@ -153,61 +154,41 @@ export function OrderForm({ onSuccess }: OrderFormProps) {
     return calculateEndDate(selectedStartDate, selectedOrderType)
   }, [selectedStartDate, selectedOrderType])
 
-  // Generate unavailable dates (Wednesdays and weekends)
-  React.useEffect(() => {
-    const fetchUnavailableDates = async () => {
-      try {
-        // TODO: Replace with real API endpoint when ready
-        // Mock API call - replace with real API when ready
-        const mockUnavailableDates: Date[] = [
-          // All Wednesdays and weekends (Saturdays and Sundays)
-          // December 12, 21, 25
-          new Date(2025, 11, 12), // Dec 12
-          new Date(2025, 11, 21), // Dec 21
-          new Date(2025, 11, 25), // Dec 25
-          // January and February - all Wednesdays and weekends
-          new Date(2026, 0, 3), // Jan 3 (Wed)
-          new Date(2026, 0, 4), // Jan 4 (Sun)
-          new Date(2026, 0, 10), // Jan 10 (Sat)
-          new Date(2026, 0, 11), // Jan 11 (Sun)
-          new Date(2026, 0, 17), // Jan 17 (Sat)
-          new Date(2026, 0, 18), // Jan 18 (Sun)
-          new Date(2026, 0, 24), // Jan 24 (Sat)
-          new Date(2026, 0, 25), // Jan 25 (Sun)
-          new Date(2026, 0, 31), // Jan 31 (Sat)
-          new Date(2026, 1, 1), // Feb 1 (Sun)
-          new Date(2026, 1, 7), // Feb 7 (Sat)
-          new Date(2026, 1, 8), // Feb 8 (Sun)
-          new Date(2026, 1, 14), // Feb 14 (Sat)
-          new Date(2026, 1, 15), // Feb 15 (Sun)
-          new Date(2026, 1, 21), // Feb 21 (Sat)
-          new Date(2026, 1, 22), // Feb 22 (Sun)
-          new Date(2026, 1, 28), // Feb 28 (Sat)
-        ]
-
-        // Generate all Wednesdays and weekends for next 3 months
-        const today = new Date()
-        const maxDate = new Date()
-        maxDate.setMonth(maxDate.getMonth() + 3)
-
-        const currentDate = new Date(today)
-        while (currentDate <= maxDate) {
-          const dayOfWeek = currentDate.getDay()
-          // 3 is Wednesday, 6 is Saturday, 0 is Sunday
-          if (dayOfWeek === 3 || dayOfWeek === 6 || dayOfWeek === 0) {
-            mockUnavailableDates.push(new Date(currentDate))
-          }
-          currentDate.setDate(currentDate.getDate() + 1)
-        }
-
-        setUnavailableDates(mockUnavailableDates)
-      } catch (error) {
-        console.error("Failed to fetch unavailable dates:", error)
-      }
+  // Generate query args based on current date + 3 months
+  const queryArgs = React.useMemo(() => {
+    if (!selectedChildId) return "skip"
+    
+    const today = new Date()
+    const maxDate = new Date()
+    maxDate.setMonth(maxDate.getMonth() + 3)
+    
+    return {
+      childId: selectedChildId as Id<"children">,
+      startDate: formatDateToISO(today),
+      endDate: formatDateToISO(maxDate),
     }
+  }, [selectedChildId])
 
-    fetchUnavailableDates()
-  }, [])
+  const fetchedOffDays = useQuery(
+    api.offdays.list.listFutureOffDaysByChildId, 
+    queryArgs
+  )
+
+  React.useEffect(() => {
+    // Reset offDays when query is skipped
+    if (queryArgs === "skip") {
+      setOffDays([])
+      setOffDaysLoading(false)
+    } else if (fetchedOffDays === undefined) {
+      // When query is not skipped but data is undefined, we're loading
+      setOffDays([])
+      setOffDaysLoading(true)
+    } else if (Array.isArray(fetchedOffDays)) {
+      // Only map and set offDays when fetchedOffDays is a defined array
+      setOffDays(fetchedOffDays.map(dateStr => new Date(dateStr)))
+      setOffDaysLoading(false)
+    }
+  }, [fetchedOffDays, queryArgs])
 
   // Track the last child ID to only populate preferences when child changes
   const lastChildIdRef = React.useRef<string>("")
@@ -592,6 +573,11 @@ export function OrderForm({ onSuccess }: OrderFormProps) {
               </>
             ) : step === 2 ? (
               <>
+                {offDaysLoading && (
+                  <div className="text-sm text-muted-foreground mb-4">
+                    Loading available dates...
+                  </div>
+                )}
                 <FormField
                   control={form.control}
                   name="orderType"
@@ -605,6 +591,7 @@ export function OrderForm({ onSuccess }: OrderFormProps) {
                           form.resetField("startDate", { defaultValue: undefined })
                         }}
                         value={field.value}
+                        disabled={offDaysLoading}
                       >
                         <FormControl>
                           <SelectTrigger>
@@ -632,7 +619,7 @@ export function OrderForm({ onSuccess }: OrderFormProps) {
                       {selectedOrderType === "month-order" && "Select a Month"}
                     </FormLabel>
 
-                    {selectedOrderType === "day-order" && (
+                      {selectedOrderType === "day-order" && (
                       <FormField
                         control={form.control}
                         name="startDate"
@@ -644,7 +631,7 @@ export function OrderForm({ onSuccess }: OrderFormProps) {
                                 onDateChange={(date) => {
                                   field.onChange(date)
                                 }}
-                                unavailableDates={unavailableDates}
+                                offDays={offDays}
                               />
                             </FormControl>
                             <FormMessage />
@@ -665,7 +652,7 @@ export function OrderForm({ onSuccess }: OrderFormProps) {
                                 onDateChange={(date) => {
                                   field.onChange(date)
                                 }}
-                                unavailableDates={unavailableDates}
+                                offDays={offDays}
                               />
                             </FormControl>
                             <FormMessage />
@@ -686,7 +673,7 @@ export function OrderForm({ onSuccess }: OrderFormProps) {
                                 onDateChange={(date) => {
                                   field.onChange(date)
                                 }}
-                                unavailableDates={unavailableDates}
+                                offDays={offDays}
                               />
                             </FormControl>
                             <FormMessage />
@@ -708,7 +695,7 @@ export function OrderForm({ onSuccess }: OrderFormProps) {
                     type="button"
                     variant="outline"
                     onClick={onStep2Back}
-                    disabled={form.formState.isSubmitting}
+                    disabled={form.formState.isSubmitting || offDaysLoading}
                   >
                     <ChevronLeft className="mr-2 h-4 w-4" />
                     Back
@@ -716,7 +703,7 @@ export function OrderForm({ onSuccess }: OrderFormProps) {
                   <Button
                     type="button"
                     onClick={onStep2Next}
-                    disabled={form.formState.isSubmitting}
+                    disabled={form.formState.isSubmitting || offDaysLoading}
                     className="flex-1"
                   >
                     Next

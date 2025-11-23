@@ -8,10 +8,10 @@ import { Card } from "@/components/ui/card"
 interface DayPickerProps {
   selectedDate: Date | null
   onDateChange: (date: Date) => void
-  unavailableDates: Date[]
+  offDays: Date[]
 }
 
-export function DayPicker({ selectedDate, onDateChange, unavailableDates }: DayPickerProps) {
+export function DayPicker({ selectedDate, onDateChange, offDays }: DayPickerProps) {
   const [currentDate, setCurrentDate] = useState(new Date())
 
   const getMaxDate = () => {
@@ -28,8 +28,8 @@ export function DayPicker({ selectedDate, onDateChange, unavailableDates }: DayP
 
     if (date <= today || date > maxDate) return true
 
-    // Check if date is in unavailable dates
-    return unavailableDates.some((unavailableDate) => date.toDateString() === unavailableDate.toDateString())
+    // Check if date is in off days
+    return offDays.some((offDay) => date.toDateString() === offDay.toDateString())
   }
 
   const getDaysInMonth = (date: Date) => {

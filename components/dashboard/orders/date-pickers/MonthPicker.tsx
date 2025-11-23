@@ -8,10 +8,10 @@ import { Card } from "@/components/ui/card"
 interface MonthPickerProps {
   selectedDate: Date | null
   onDateChange: (date: Date) => void
-  unavailableDates: Date[]
+  offDays: Date[]
 }
 
-export function MonthPicker({ selectedDate, onDateChange, unavailableDates }: MonthPickerProps) {
+export function MonthPicker({ selectedDate, onDateChange, offDays }: MonthPickerProps) {
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear())
 
   const isMonthDisabled = (monthIndex: number) => {
@@ -34,11 +34,11 @@ export function MonthPicker({ selectedDate, onDateChange, unavailableDates }: Mo
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(year, monthIndex, day)
 
-      const isUnavailable = unavailableDates.some(
-        (unavailableDate) => date.toDateString() === unavailableDate.toDateString(),
+      const isOffDay = offDays.some(
+        (offDay) => date.toDateString() === offDay.toDateString(),
       )
 
-      if (!isUnavailable) {
+      if (!isOffDay) {
         count++
       }
     }
