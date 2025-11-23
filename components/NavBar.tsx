@@ -39,6 +39,18 @@ export default function NavBar() {
               >
                 Orders
               </Link>
+              <Link
+                href="/admin/offdays"
+                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Off days
+              </Link>
+              <Link
+                href="/admin/profit-calculator"
+                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Calculator
+              </Link>
               <Button>
                 Download todays tickets
               </Button>
