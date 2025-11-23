@@ -127,6 +127,8 @@ export function OffDaysForm() {
                           form.setValue("startDate", range.from);
                           if (range.to) {
                             form.setValue("endDate", range.to);
+                          } else {
+                            form.setValue("endDate", range.from);
                           }
                         }
                       }}
