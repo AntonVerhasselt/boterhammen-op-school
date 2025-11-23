@@ -64,16 +64,6 @@ export const payAccessFee = action({
       },
     });
 
-    // Log the full session object to debug
-    console.log("Stripe checkout session created:", JSON.stringify({
-      id: session.id,
-      payment_intent: session.payment_intent,
-      payment_intent_type: typeof session.payment_intent,
-      payment_status: session.payment_status,
-      status: session.status,
-      mode: session.mode,
-    }, null, 2));
-
     // Store payment record in database
     // Note: As of Stripe API v2022-08-01+, payment_intent is null when session is created
     // It's only populated after the session is confirmed/completed
