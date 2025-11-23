@@ -1,5 +1,6 @@
 import { internalMutation, mutation } from "../_generated/server";
 import { v } from "convex/values";
+import { getUserByClerkUserId } from "../../lib/clerk-id";
 
 /**
  * Internal mutation to update user's stripeCustomerId.
@@ -27,23 +28,8 @@ export const updateUserAccess = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    // Get authenticated user's identity
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("User not authenticated");
-    }
-
-    const clerkUserId = identity.subject;
-    
-    // Get user by clerkUserId
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_clerkUserId", (q) => q.eq("clerkUserId", clerkUserId))
-      .first();
-
-    if (!user) {
-      throw new Error("User not found");
-    }
+    const user = await getUserByClerkUserId(ctx);
+  
 
     // Fetch the payment record by session ID
     // Use .unique() to surface duplicate session IDs (throws error if multiple found)
