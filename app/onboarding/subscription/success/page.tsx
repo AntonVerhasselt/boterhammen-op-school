@@ -14,6 +14,13 @@ import { useEffect, useState } from "react";
 import { Check } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 
+/**
+ * Render the subscription success page and update the user's access by reading `session_id` from the URL.
+ *
+ * On mount, attempts to update user access using the `session_id` query parameter; while the update is in progress it shows an activation message, on failure it shows an error message, and on success it shows confirmation text. Provides a button to navigate back to the homepage.
+ *
+ * @returns The React element for the subscription success page.
+ */
 export default function SubscriptionSuccessPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -94,4 +101,3 @@ export default function SubscriptionSuccessPage() {
     </div>
   );
 }
-
