@@ -117,6 +117,7 @@ export function OrderForm({ onSuccess }: OrderFormProps) {
   const router = useRouter()
   const [step, setStep] = React.useState(1)
   const [offDays, setOffDays] = React.useState<Date[]>([])
+  const [offDaysLoading, setOffDaysLoading] = React.useState(false)
 
   const children = useQuery(api.children.list.listMyChildren, {})
   const currentUser = useQuery(api.users.get.getMyUser)
@@ -174,10 +175,20 @@ export function OrderForm({ onSuccess }: OrderFormProps) {
   )
 
   React.useEffect(() => {
-    if (fetchedOffDays) {
+    // Reset offDays when query is skipped
+    if (queryArgs === "skip") {
+      setOffDays([])
+      setOffDaysLoading(false)
+    } else if (fetchedOffDays === undefined) {
+      // When query is not skipped but data is undefined, we're loading
+      setOffDays([])
+      setOffDaysLoading(true)
+    } else if (Array.isArray(fetchedOffDays)) {
+      // Only map and set offDays when fetchedOffDays is a defined array
       setOffDays(fetchedOffDays.map(dateStr => new Date(dateStr)))
+      setOffDaysLoading(false)
     }
-  }, [fetchedOffDays])
+  }, [fetchedOffDays, queryArgs])
 
   // Track the last child ID to only populate preferences when child changes
   const lastChildIdRef = React.useRef<string>("")
@@ -562,6 +573,11 @@ export function OrderForm({ onSuccess }: OrderFormProps) {
               </>
             ) : step === 2 ? (
               <>
+                {offDaysLoading && (
+                  <div className="text-sm text-muted-foreground mb-4">
+                    Loading available dates...
+                  </div>
+                )}
                 <FormField
                   control={form.control}
                   name="orderType"
@@ -575,6 +591,7 @@ export function OrderForm({ onSuccess }: OrderFormProps) {
                           form.resetField("startDate", { defaultValue: undefined })
                         }}
                         value={field.value}
+                        disabled={offDaysLoading}
                       >
                         <FormControl>
                           <SelectTrigger>
@@ -678,7 +695,7 @@ export function OrderForm({ onSuccess }: OrderFormProps) {
                     type="button"
                     variant="outline"
                     onClick={onStep2Back}
-                    disabled={form.formState.isSubmitting}
+                    disabled={form.formState.isSubmitting || offDaysLoading}
                   >
                     <ChevronLeft className="mr-2 h-4 w-4" />
                     Back
@@ -686,7 +703,7 @@ export function OrderForm({ onSuccess }: OrderFormProps) {
                   <Button
                     type="button"
                     onClick={onStep2Next}
-                    disabled={form.formState.isSubmitting}
+                    disabled={form.formState.isSubmitting || offDaysLoading}
                     className="flex-1"
                   >
                     Next
