@@ -1,0 +1,32 @@
+# Files to Commit - Test Suite Implementation
+
+## New Test Files (8)
+lib/__tests__/stripe-connection.test.ts
+convex/__tests__/payments/create.test.ts
+convex/__tests__/users/update.test.ts
+convex/__tests__/stripe/checkCustomer.test.ts
+convex/__tests__/stripe/payAccessFee.test.ts
+convex/__tests__/integration/payment-flow.test.ts
+convex/__tests__/utils/date-helpers.test.ts
+app/__tests__/onboarding/subscription/success.test.tsx
+
+## Configuration Files (3)
+vitest.config.ts
+vitest.setup.ts
+convex/testUtils.ts
+
+## Documentation Files (4)
+TEST_README.md
+TESTING_SUMMARY.md
+TEST_SUITE_REPORT.md
+IMPLEMENTATION_COMPLETE.md
+
+## Modified Files (1)
+package.json  # Added test scripts
+
+## Optional Helper Files (1)
+FILES_TO_COMMIT.txt  # This file
+
+---
+
+Total: 17 files
