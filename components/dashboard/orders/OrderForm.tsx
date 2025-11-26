@@ -4,7 +4,7 @@ import * as React from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { useQuery, useMutation } from "convex/react"
+import { useQuery, useAction } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import { Id } from "@/convex/_generated/dataModel"
 import { useRouter } from "next/navigation"
@@ -126,7 +126,7 @@ export function OrderForm({ onSuccess }: OrderFormProps) {
 
   const children = useQuery(api.children.list.listMyChildren, {})
   const currentUser = useQuery(api.users.get.getMyUser)
-  const createOrder = useMutation(api.orders.create.createOrder)
+  const payOrder = useAction(api.stripe.payOrder.payOrder)
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -352,7 +352,8 @@ export function OrderForm({ onSuccess }: OrderFormProps) {
         throw new Error("End date calculation failed")
       }
 
-      await createOrder({
+      // Call the payOrder action which creates the order and returns a Stripe checkout URL
+      const result = await payOrder({
         childId: values.childId as Id<"children">,
         orderType: values.orderType,
         startDate: formatDateToISO(values.startDate),
@@ -366,11 +367,8 @@ export function OrderForm({ onSuccess }: OrderFormProps) {
         },
       })
 
-      if (onSuccess) {
-        onSuccess()
-      } else {
-        router.push("/orders")
-      }
+      // Redirect to Stripe checkout
+      window.location.href = result.url
     } catch (error) {
       console.error("Error creating order:", error)
       form.setError("root", {

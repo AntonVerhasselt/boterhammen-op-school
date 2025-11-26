@@ -5,6 +5,7 @@ const paymentReturnType = v.union(
   v.object({
     _id: v.id("payments"),
     userId: v.id("users"),
+    orderId: v.optional(v.id("orders")),
     stripeCheckoutSessionId: v.string(),
     stripePaymentIntentId: v.optional(v.string()),
     amount: v.number(),

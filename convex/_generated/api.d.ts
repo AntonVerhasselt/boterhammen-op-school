@@ -30,6 +30,7 @@ import type * as schools_list from "../schools/list.js";
 import type * as schoolsandclasses from "../schoolsandclasses.js";
 import type * as stripe_checkCustomer from "../stripe/checkCustomer.js";
 import type * as stripe_payAccessFee from "../stripe/payAccessFee.js";
+import type * as stripe_payOrder from "../stripe/payOrder.js";
 import type * as stripe_webhook_checkout from "../stripe/webhook/checkout.js";
 import type * as stripe_webhook_fulfill from "../stripe/webhook/fulfill.js";
 import type * as users_create from "../users/create.js";
@@ -65,6 +66,7 @@ declare const fullApi: ApiFromModules<{
   schoolsandclasses: typeof schoolsandclasses;
   "stripe/checkCustomer": typeof stripe_checkCustomer;
   "stripe/payAccessFee": typeof stripe_payAccessFee;
+  "stripe/payOrder": typeof stripe_payOrder;
   "stripe/webhook/checkout": typeof stripe_webhook_checkout;
   "stripe/webhook/fulfill": typeof stripe_webhook_fulfill;
   "users/create": typeof users_create;

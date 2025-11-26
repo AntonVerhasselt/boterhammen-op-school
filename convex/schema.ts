@@ -66,7 +66,9 @@ export default defineSchema({
     childId: v.id("children"),
     orderType: orderType,
     startDate: v.string(),  // ISO 8601 format: YYYY-MM-DD
-    endDate: v.string(),    // ISO 8601 format: YYYY-MM-DD
+    endDate: v.string(),   // ISO 8601 format: YYYY-MM-DD
+    price: v.number(),    // in cents
+    billableDays: v.number(),
     preferences: v.object({
       notes: v.string(),       // free text (can be empty string)
       allergies: v.string(),   // keep simple as free text for now
@@ -102,6 +104,7 @@ export default defineSchema({
 
   payments: defineTable({
     userId: v.id("users"),
+    orderId: v.optional(v.id("orders")),
     stripeCheckoutSessionId: v.string(),
     stripePaymentIntentId: v.optional(v.string()), // Optional - set via webhook when payment completes
     amount: v.number(), // in cents
