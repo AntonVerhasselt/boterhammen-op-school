@@ -23,6 +23,7 @@ import type * as orders_count from "../orders/count.js";
 import type * as orders_create from "../orders/create.js";
 import type * as orders_list from "../orders/list.js";
 import type * as orders_update from "../orders/update.js";
+import type * as orders_updateAll from "../orders/updateAll.js";
 import type * as payments_create from "../payments/create.js";
 import type * as payments_get from "../payments/get.js";
 import type * as payments_update from "../payments/update.js";
@@ -59,6 +60,7 @@ declare const fullApi: ApiFromModules<{
   "orders/create": typeof orders_create;
   "orders/list": typeof orders_list;
   "orders/update": typeof orders_update;
+  "orders/updateAll": typeof orders_updateAll;
   "payments/create": typeof payments_create;
   "payments/get": typeof payments_get;
   "payments/update": typeof payments_update;

@@ -68,10 +68,23 @@ export const handleCheckoutEvent = internalAction({
       },
     );
 
-    // Update the user's access expires at
-    await ctx.runMutation(internal.users.update.updateUserAccessExpiresAt, {
-      userId: payment.userId,
-    });
+    // Handle post-payment updates based on payment type
+    if (payment.type === "access-fee") {
+      // Update user's access expiration for subscription payments
+      await ctx.runMutation(internal.users.update.updateUserAccessExpiresAt, {
+        userId: payment.userId,
+      });
+    } else if (payment.type === "order") {
+      // Update order payment status for order payments
+      if (!payment.orderId) {
+        console.error(`Order payment ${payment._id} missing orderId`);
+        return null;
+      }
+      await ctx.runMutation(internal.orders.update.updateOrderPaymentStatusFromWebhook, {
+        orderId: payment.orderId,
+        status: paymentStatus,
+      });
+    }
 
     return null;
   },
