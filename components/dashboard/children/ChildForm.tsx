@@ -41,7 +41,7 @@ const formSchema = z.object({
   lastName: z.string().min(1, "Last name is required"),
   schoolId: z.string().min(1, "School is required"),
   classId: z.string().min(1, "Class is required"),
-  allergies: z.string(),
+  allergies: z.string().optional(),
   breadType: z.enum(["white", "brown", "none"]),
   crust: z.boolean(),
   butter: z.boolean(),
@@ -155,7 +155,7 @@ export function ChildForm({ childId, onSuccess }: ChildFormProps) {
         lastName: child.lastName,
         schoolId: schoolIdStr,
         classId: classIdStr,
-        allergies: child.preferences.allergies,
+        allergies: child.preferences.allergies || "",
         breadType: child.preferences.breadType,
         crust: child.preferences.crust,
         butter: child.preferences.butter,
@@ -181,6 +181,9 @@ export function ChildForm({ childId, onSuccess }: ChildFormProps) {
 
   const onSubmit = async (values: FormValues) => {
     try {
+      // Convert empty string to undefined for optional allergies field
+      const allergies = values.allergies?.trim() || undefined;
+      
       if (isEditMode && childId) {
         await updateChild({
           childId,
@@ -189,7 +192,7 @@ export function ChildForm({ childId, onSuccess }: ChildFormProps) {
           schoolId: values.schoolId as Id<"schools">,
           classId: values.classId as Id<"classes">,
           preferences: {
-            allergies: values.allergies,
+            allergies,
             breadType: values.breadType,
             crust: values.crust,
             butter: values.butter,
@@ -202,7 +205,7 @@ export function ChildForm({ childId, onSuccess }: ChildFormProps) {
           schoolId: values.schoolId as Id<"schools">,
           classId: values.classId as Id<"classes">,
           preferences: {
-            allergies: values.allergies,
+            allergies,
             breadType: values.breadType,
             crust: values.crust,
             butter: values.butter,
