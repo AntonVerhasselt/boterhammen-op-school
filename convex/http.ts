@@ -8,7 +8,15 @@ http.route({
   path: "/stripe-webhook",
   method: "POST",
   handler: httpAction(async (ctx, request) => {
-    const signature: string = request.headers.get("stripe-signature") as string;
+    const signatureHeader = request.headers.get("stripe-signature");
+    
+    if (!signatureHeader) {
+      return new Response("Missing stripe-signature header", {
+        status: 400,
+      });
+    }
+    
+    const signature: string = signatureHeader;
     const payload = await request.text();
 
     const result = await ctx.runAction(internal.stripe.webhook.fulfill.fulfill, {
