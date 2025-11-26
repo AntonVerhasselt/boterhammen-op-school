@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   title: "Boterhammen op School",
   description: "Boterhammen op School",
   icons: {
-    icon: "/convex.svg",
+    icon: "/favicon.svg",
   },
 };
 

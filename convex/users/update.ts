@@ -3,6 +3,20 @@ import { v } from "convex/values";
 import { getUserByClerkUserId } from "../../lib/clerk-id";
 
 /**
+ * Helper function to calculate the access expiration date.
+ * Returns the last day of the next June formatted as "YYYY-MM-DD".
+ */
+function calculateAccessExpiresAt(): string {
+  const now = new Date();
+  const year = now.getMonth() >= 5 ? now.getFullYear() + 1 : now.getFullYear();
+  // June is month 5 (0-indexed)
+  const expiresAt = new Date(year, 5 + 1, 0); // last day of June (midnight of July 1st)
+
+  // Format as "YYYY-MM-DD"
+  return expiresAt.toISOString().slice(0, 10);
+}
+
+/**
  * Internal mutation to update user's stripeCustomerId.
  */
 export const updateUserStripeCustomerId = internalMutation({
@@ -14,6 +28,26 @@ export const updateUserStripeCustomerId = internalMutation({
   handler: async (ctx, args) => {
     await ctx.db.patch(args.userId, {
       stripeCustomerId: args.stripeCustomerId,
+    });
+    return null;
+  },
+});
+
+/**
+ * Internal mutation to update user's access expires at.
+ * Calculates the expiration date as the last day of the next June.
+ * Used by webhook handlers.
+ */
+export const updateUserAccessExpiresAt = internalMutation({
+  args: {
+    userId: v.id("users"),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const formattedExpiresAt = calculateAccessExpiresAt();
+
+    await ctx.db.patch(args.userId, {
+      accessExpiresAt: formattedExpiresAt,
     });
     return null;
   },
@@ -47,14 +81,7 @@ export const updateUserAccess = mutation({
       throw new Error("Payment does not belong to authenticated user");
     }
 
-    // Calculate the last day of the next June
-    const now = new Date();
-    const year = now.getMonth() >= 5 ? now.getFullYear() + 1 : now.getFullYear();
-    // June is month 5 (0-indexed)
-    const expiresAt = new Date(year, 5 + 1, 0); // last day of June (midnight of July 1st)
-
-    // Format as "YYYY-MM-DD"
-    const formattedExpiresAt = expiresAt.toISOString().slice(0, 10);
+    const formattedExpiresAt = calculateAccessExpiresAt();
 
     // Only update accessExpiresAt and payment status when the payment belongs to the user
     await ctx.db.patch(user._id, {

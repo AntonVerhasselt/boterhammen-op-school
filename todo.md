@@ -2,6 +2,7 @@
 
 ## Development Tasks
 
+- [ ] Check orders in db when creating new one to avoid duplicates (2 orders for the same day for the same child)
 - [ ] Protect offDays mutations with checkAdmin (need to wrap the mutations in an action to do this)
 - [ ] Validate payments through Stripe webhooks, not only through success url
 - [ ] Make the menu navbar mobile friendly

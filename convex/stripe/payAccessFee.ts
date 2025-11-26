@@ -36,7 +36,7 @@ export const payAccessFee = action({
     // Get Stripe client
     const stripe = getStripeClient();
 
-    // Create checkout session
+    // Create checkout session using the existing payment intent
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       customer: stripeCustomerId,
@@ -53,7 +53,7 @@ export const payAccessFee = action({
           quantity: 1,
         },
       ],
-      success_url: `${baseUrl}/onboarding/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${baseUrl}/onboarding/subscription/success?session_id={CHECKOUT_SESSION_ID}&`,
       cancel_url: `${baseUrl}/onboarding/subscription`,
       metadata: {
         userId: userId,
