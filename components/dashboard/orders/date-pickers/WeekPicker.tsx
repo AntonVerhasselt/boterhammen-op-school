@@ -12,8 +12,6 @@ interface WeekPickerProps {
 }
 
 export function WeekPicker({ selectedDate, onDateChange, offDays }: WeekPickerProps) {
-  const [currentDate, setCurrentDate] = useState(new Date())
-
   const getMaxDate = () => {
     const max = new Date()
     max.setMonth(max.getMonth() + 3)
@@ -25,14 +23,6 @@ export function WeekPicker({ selectedDate, onDateChange, offDays }: WeekPickerPr
     const day = d.getDay()
     const diff = d.getDate() - (day === 0 ? 6 : day - 1)
     return new Date(d.setDate(diff))
-  }
-
-  const isWeekDisabled = (weekStart: Date) => {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    const maxDate = getMaxDate()
-    maxDate.setHours(23, 59, 59, 999)
-    return weekStart <= today || weekStart > maxDate
   }
 
   const countAvailableDaysInWeek = (weekStart: Date) => {
@@ -67,6 +57,45 @@ export function WeekPicker({ selectedDate, onDateChange, offDays }: WeekPickerPr
     }
 
     return weeks
+  }
+
+  // Helper function to check if a month has any available weeks
+  const hasAvailableWeeks = (date: Date) => {
+    const weeks = getWeeksInMonth(date)
+    return weeks.some((weekStart) => {
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      const maxDate = getMaxDate()
+      maxDate.setHours(23, 59, 59, 999)
+      
+      // Week must be in the future and within max date
+      if (weekStart <= today || weekStart > maxDate) {
+        return false
+      }
+      
+      // Week must have at least one available day
+      return countAvailableDaysInWeek(weekStart) > 0
+    })
+  }
+
+  // Initialize with current date, but if current month has no available weeks, use next month
+  const getInitialDate = () => {
+    const today = new Date()
+    if (!hasAvailableWeeks(today)) {
+      const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1)
+      return nextMonth
+    }
+    return today
+  }
+
+  const [currentDate, setCurrentDate] = useState(getInitialDate())
+
+  const isWeekDisabled = (weekStart: Date) => {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const maxDate = getMaxDate()
+    maxDate.setHours(23, 59, 59, 999)
+    return weekStart <= today || weekStart > maxDate
   }
 
   const handlePrevMonth = () => {

@@ -12,8 +12,6 @@ interface DayPickerProps {
 }
 
 export function DayPicker({ selectedDate, onDateChange, offDays }: DayPickerProps) {
-  const [currentDate, setCurrentDate] = useState(new Date())
-
   const getMaxDate = () => {
     const max = new Date()
     max.setMonth(max.getMonth() + 3)
@@ -35,6 +33,50 @@ export function DayPicker({ selectedDate, onDateChange, offDays }: DayPickerProp
   const getDaysInMonth = (date: Date) => {
     return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()
   }
+
+  // Helper function to check if a month has any available days
+  const hasAvailableDays = (date: Date) => {
+    const year = date.getFullYear()
+    const month = date.getMonth()
+    const daysInMonth = getDaysInMonth(date)
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const maxDate = getMaxDate()
+    maxDate.setHours(23, 59, 59, 999)
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const checkDate = new Date(year, month, day)
+      checkDate.setHours(0, 0, 0, 0)
+
+      // Date must be in the future and within max date
+      if (checkDate <= today || checkDate > maxDate) {
+        continue
+      }
+
+      // Date must not be in off days
+      const isOffDay = offDays.some(
+        (offDay) => checkDate.toDateString() === offDay.toDateString(),
+      )
+
+      if (!isOffDay) {
+        return true
+      }
+    }
+
+    return false
+  }
+
+  // Initialize with current date, but if current month has no available days, use next month
+  const getInitialDate = () => {
+    const today = new Date()
+    if (!hasAvailableDays(today)) {
+      const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1)
+      return nextMonth
+    }
+    return today
+  }
+
+  const [currentDate, setCurrentDate] = useState(getInitialDate())
 
   const getFirstDayOfMonth = (date: Date) => {
     const dayOfWeek = new Date(date.getFullYear(), date.getMonth(), 1).getDay()
