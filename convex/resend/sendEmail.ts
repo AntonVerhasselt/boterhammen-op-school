@@ -64,7 +64,7 @@ export const sendEmail = internalAction({
     const subject = interpolateSubject(template.subjectTemplate, variables);
 
     // Send the email via the Convex Resend component mutation
-    await ctx.runMutation(internal.resend.sentEmail.sendRenderedEmail, {
+    await ctx.runMutation(internal.resend.trigger.sendRenderedEmail, {
       to,
       subject,
       html,
