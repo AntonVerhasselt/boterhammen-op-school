@@ -6,13 +6,34 @@ import { api, internal } from "../_generated/api";
 import { getStripeClient } from "../../lib/stripe-connection";
 
 /**
- * Create a Stripe checkout session for the access fee payment.
+ * Create a Stripe checkout session for an order payment.
+ * First creates the order in the database, then creates a Stripe checkout session.
  * Returns the checkout session URL for redirect.
  */
-export const payAccessFee = action({
-  args: {},
+export const payOrder = action({
+  args: {
+    childId: v.id("children"),
+    orderType: v.union(
+      v.literal("day-order"),
+      v.literal("week-order"),
+      v.literal("month-order")
+    ),
+    startDate: v.string(), // ISO 8601 format: YYYY-MM-DD
+    endDate: v.string(), // ISO 8601 format: YYYY-MM-DD
+    preferences: v.object({
+      notes: v.string(),
+      allergies: v.string(),
+      breadType: v.union(
+        v.literal("white"),
+        v.literal("brown"),
+        v.literal("none")
+      ),
+      crust: v.boolean(),
+      butter: v.boolean(),
+    }),
+  },
   returns: v.object({ url: v.string() }),
-  handler: async (ctx): Promise<{ url: string }> => {
+  handler: async (ctx, args): Promise<{ url: string }> => {
     // Get user identity from Clerk
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
@@ -33,8 +54,21 @@ export const payAccessFee = action({
       throw new Error("Missing NEXT_PUBLIC_APP_URL environment variable");
     }
 
+    // Create the order in the database
+    const order = await ctx.runMutation(internal.orders.create.createOrder, {
+      userId: userId,
+      childId: args.childId,
+      orderType: args.orderType,
+      startDate: args.startDate,
+      endDate: args.endDate,
+      preferences: args.preferences,
+    });
+
     // Get Stripe client
     const stripe = getStripeClient();
+
+    // Format price for display (convert cents to euros)
+    const priceInEuros = (order.price / 100).toFixed(2);
 
     // Create checkout session
     const session = await stripe.checkout.sessions.create({
@@ -45,30 +79,32 @@ export const payAccessFee = action({
           price_data: {
             currency: "eur",
             product_data: {
-              name: "Access Fee",
-              description: "Annual subscription fee for the current school year",
+              name: "Sandwich Order",
+              description: `${order.orderType.replace("-", " ")} from ${order.startDate} to ${order.endDate} (${order.billableDays} days)`,
             },
-            unit_amount: 1000, // 10 EUR in cents
+            unit_amount: order.price, // Price in cents
           },
           quantity: 1,
         },
       ],
-      success_url: `${baseUrl}/onboarding/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${baseUrl}/onboarding/subscription`,
+      success_url: `${baseUrl}/orders/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${baseUrl}/orders/cancel?session_id={CHECKOUT_SESSION_ID}`,
       metadata: {
         userId: userId,
         clerkUserId: clerkUserId,
-        type: "access-fee",
+        type: "order",
+        orderId: order._id,
       },
     });
 
     // Store payment record in database
     await ctx.runMutation(internal.payments.create.createPayment, {
       userId: userId,
+      orderId: order._id,
       stripeCheckoutSessionId: session.id,
-      amount: 1000, // 10 EUR in cents
+      amount: order.price,
       currency: "eur",
-      type: "access-fee",
+      type: "order",
       status: "pending",
     });
 

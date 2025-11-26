@@ -4,7 +4,7 @@ import * as React from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { useQuery, useMutation } from "convex/react"
+import { useQuery, useAction } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import { Id } from "@/convex/_generated/dataModel"
 import { useRouter } from "next/navigation"
@@ -40,6 +40,11 @@ import {
   formatDateToISO,
   formatDateRange,
 } from "@/lib/date-utils"
+import {
+  calculateBillableDays,
+  calculateOrderPrice,
+  formatPrice,
+} from "@/lib/price-utils"
 import { OrderStepper } from "./OrderStepper"
 import { DayPicker } from "./date-pickers/DayPicker"
 import { WeekPicker } from "./date-pickers/WeekPicker"
@@ -121,7 +126,7 @@ export function OrderForm({ onSuccess }: OrderFormProps) {
 
   const children = useQuery(api.children.list.listMyChildren, {})
   const currentUser = useQuery(api.users.get.getMyUser)
-  const createOrder = useMutation(api.orders.create.createOrder)
+  const payOrder = useAction(api.stripe.payOrder.payOrder)
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -153,6 +158,14 @@ export function OrderForm({ onSuccess }: OrderFormProps) {
     if (!selectedStartDate) return null
     return calculateEndDate(selectedStartDate, selectedOrderType)
   }, [selectedStartDate, selectedOrderType])
+
+  // Calculate pricing data
+  const pricingData = React.useMemo(() => {
+    if (!selectedStartDate || !endDate || offDaysLoading) return null
+    
+    const billableDays = calculateBillableDays(selectedStartDate, endDate, offDays)
+    return calculateOrderPrice(selectedOrderType, billableDays)
+  }, [selectedStartDate, endDate, selectedOrderType, offDays, offDaysLoading])
 
   // Generate query args based on current date + 3 months
   const queryArgs = React.useMemo(() => {
@@ -339,7 +352,8 @@ export function OrderForm({ onSuccess }: OrderFormProps) {
         throw new Error("End date calculation failed")
       }
 
-      await createOrder({
+      // Call the payOrder action which creates the order and returns a Stripe checkout URL
+      const result = await payOrder({
         childId: values.childId as Id<"children">,
         orderType: values.orderType,
         startDate: formatDateToISO(values.startDate),
@@ -353,11 +367,8 @@ export function OrderForm({ onSuccess }: OrderFormProps) {
         },
       })
 
-      if (onSuccess) {
-        onSuccess()
-      } else {
-        router.push("/orders")
-      }
+      // Redirect to Stripe checkout
+      window.location.href = result.url
     } catch (error) {
       console.error("Error creating order:", error)
       form.setError("root", {
@@ -715,42 +726,74 @@ export function OrderForm({ onSuccess }: OrderFormProps) {
               <>
                 {/* Step 3: Order Overview */}
                 <div className="space-y-6">
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold">Child Information</h3>
-                    <div className="space-y-3 pl-4 border-l-2">
-                      <div>
-                        <span className="text-sm font-medium text-muted-foreground">Child:</span>
-                        <p className="text-base mt-1">
-                          {selectedChild
-                            ? `${selectedChild.firstName} ${selectedChild.lastName}`
-                            : "Not selected"}
-                        </p>
+                  {/* Two-column layout for desktop, single column for mobile */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Left Column: Child Info & Order Details */}
+                    <div className="space-y-6">
+                      <div className="space-y-4">
+                        <h3 className="text-lg font-semibold">Child Information</h3>
+                        <div className="space-y-3 pl-4 border-l-2">
+                          <div>
+                            <span className="text-sm font-medium text-muted-foreground">Child:</span>
+                            <p className="text-base mt-1">
+                              {selectedChild
+                                ? `${selectedChild.firstName} ${selectedChild.lastName}`
+                                : "Not selected"}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <h3 className="text-lg font-semibold">Order Details</h3>
+                        <div className="space-y-3 pl-4 border-l-2">
+                          <div>
+                            <span className="text-sm font-medium text-muted-foreground">Order Type:</span>
+                            <p className="text-base mt-1">
+                              {selectedOrderType
+                                ? formatOrderType(selectedOrderType)
+                                : "Not selected"}
+                            </p>
+                          </div>
+                          <div>
+                            <span className="text-sm font-medium text-muted-foreground">Date Range:</span>
+                            <p className="text-base mt-1">
+                              {selectedStartDate && endDate
+                                ? formatDateRange(selectedStartDate, endDate)
+                                : "Not selected"}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Right Column: Pricing */}
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold">Pricing</h3>
+                      <div className="space-y-3 pl-4 border-l-2">
+                        <div>
+                          <span className="text-sm font-medium text-muted-foreground">Billable Days:</span>
+                          <p className="text-base mt-1">
+                            {pricingData?.billableDays || 0} days
+                          </p>
+                        </div>
+                        <div>
+                          <span className="text-sm font-medium text-muted-foreground">Price per Day:</span>
+                          <p className="text-base mt-1">
+                            {pricingData ? formatPrice(pricingData.pricePerDay) : formatPrice(0)}
+                          </p>
+                        </div>
+                        <div>
+                          <span className="text-sm font-medium text-muted-foreground">Total Price:</span>
+                          <p className="text-base mt-1 font-semibold">
+                            {pricingData ? formatPrice(pricingData.totalPrice) : formatPrice(0)}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>
 
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold">Order Details</h3>
-                    <div className="space-y-3 pl-4 border-l-2">
-                      <div>
-                        <span className="text-sm font-medium text-muted-foreground">Order Type:</span>
-                        <p className="text-base mt-1">
-                          {selectedOrderType
-                            ? formatOrderType(selectedOrderType)
-                            : "Not selected"}
-                        </p>
-                      </div>
-                      <div>
-                        <span className="text-sm font-medium text-muted-foreground">Date Range:</span>
-                        <p className="text-base mt-1">
-                          {selectedStartDate && endDate
-                            ? formatDateRange(selectedStartDate, endDate)
-                            : "Not selected"}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
+                  {/* Full Width: Preferences */}
                   <div className="space-y-4">
                     <h3 className="text-lg font-semibold">Preferences</h3>
                     <div className="space-y-3 pl-4 border-l-2">

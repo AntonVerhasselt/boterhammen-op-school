@@ -7,6 +7,7 @@ import { v } from "convex/values";
 export const createPayment = internalMutation({
   args: {
     userId: v.id("users"),
+    orderId: v.optional(v.id("orders")),
     stripeCheckoutSessionId: v.string(),
     stripePaymentIntentId: v.optional(v.string()), // Optional - set via webhook when payment completes
     amount: v.number(),
@@ -24,6 +25,7 @@ export const createPayment = internalMutation({
   handler: async (ctx, args) => {
     return await ctx.db.insert("payments", {
       userId: args.userId,
+      orderId: args.orderId,
       stripeCheckoutSessionId: args.stripeCheckoutSessionId,
       stripePaymentIntentId: args.stripePaymentIntentId,
       amount: args.amount,

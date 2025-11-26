@@ -12,6 +12,13 @@ import { useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useState } from "react";
 
+/**
+ * Render the annual subscription page and initiate a Stripe checkout flow when the user clicks the payment button.
+ *
+ * The payment button is disabled while a request is in progress or when the user is not authenticated. When clicked by an authenticated user, a checkout session is requested using the user's Clerk ID and the browser is redirected to the returned Stripe URL.
+ *
+ * @returns The subscription page React element.
+ */
 export default function SubscriptionPage() {
   const payAccessFee = useAction(api.stripe.payAccessFee.payAccessFee);
   const [isLoading, setIsLoading] = useState(false);
@@ -74,4 +81,3 @@ export default function SubscriptionPage() {
     </div>
   );
 }
-

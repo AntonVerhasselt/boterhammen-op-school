@@ -15,21 +15,23 @@ import { Check } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 /**
- * Render the subscription success page and update the user's access by reading `session_id` from the URL.
+ * Render the order payment success page and update the order payment status by reading `session_id` from the URL.
  *
- * On mount, attempts to update user access using the `session_id` query parameter; while the update is in progress it shows an activation message, on failure it shows an error message, and on success it shows confirmation text. Provides a button to navigate back to the homepage.
+ * On mount, attempts to update order payment status using the `session_id` query parameter; while the update is in progress it shows a processing message, on failure it shows an error message, and on success it shows confirmation text. Provides a button to navigate back to the orders page.
  *
- * @returns The React element for the subscription success page.
+ * @returns The React element for the order payment success page.
  */
-export default function SubscriptionSuccessPage() {
+export default function OrderSuccessPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const updateUserAccess = useMutation(api.users.update.updateUserAccess);
+  const updateOrderPaymentStatus = useMutation(
+    api.orders.update.updateOrderPaymentStatus
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const updateAccess = async () => {
+    const updatePaymentStatus = async () => {
       try {
         const sessionId = searchParams.get("session_id");
         if (!sessionId) {
@@ -37,20 +39,20 @@ export default function SubscriptionSuccessPage() {
           setIsLoading(false);
           return;
         }
-        await updateUserAccess({ sessionId });
+        await updateOrderPaymentStatus({ sessionId, newStatus: "paid" });
         setIsLoading(false);
       } catch (err) {
-        console.error("Error updating user access:", err);
-        setError("Failed to update access. Please contact support.");
+        console.error("Error updating order payment status:", err);
+        setError("Failed to update order status. Please contact support.");
         setIsLoading(false);
       }
     };
 
-    updateAccess();
-  }, [updateUserAccess, searchParams]);
+    updatePaymentStatus();
+  }, [updateOrderPaymentStatus, searchParams]);
 
-  const handleGoHome = () => {
-    router.push("/");
+  const handleGoToOrders = () => {
+    router.push("/orders");
   };
 
   return (
@@ -64,13 +66,13 @@ export default function SubscriptionSuccessPage() {
           </div>
           <CardTitle className="text-center">Payment Successful!</CardTitle>
           <CardDescription className="text-center">
-            Your subscription has been activated
+            Your order has been placed
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {isLoading ? (
             <div className="text-sm text-muted-foreground text-center">
-              <p>Activating your subscription...</p>
+              <p>Processing your order...</p>
             </div>
           ) : error ? (
             <div className="text-sm text-destructive text-center">
@@ -79,25 +81,25 @@ export default function SubscriptionSuccessPage() {
           ) : (
             <div className="text-sm text-muted-foreground space-y-4">
               <p className="text-center">
-                Thank you for your payment! Your annual subscription has been
-                successfully activated.
+                Thank you for your payment! Your order has been successfully
+                placed and will be processed.
               </p>
               <p className="text-center">
-                You now have full access to all features until the end of the
-                current school year.
+                You can view your order details in the orders page.
               </p>
             </div>
           )}
 
           <Button
             className="w-full"
-            onClick={handleGoHome}
+            onClick={handleGoToOrders}
             disabled={isLoading}
           >
-            Go to Homepage
+            Go to Orders
           </Button>
         </CardContent>
       </Card>
     </div>
   );
 }
+

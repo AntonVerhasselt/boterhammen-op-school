@@ -21,6 +21,14 @@ function isAccessActive(accessExpiresAt: string | undefined | null): boolean {
   return accessExpiresAt >= today;
 }
 
+/**
+ * Guards child content based on the current user's onboarding and subscription status, redirecting to onboarding routes when the user is not present in the database or lacks active access.
+ *
+ * Renders `children` when the component has mounted and either the current route is an onboarding route or the authenticated user exists in the database with active access. While the client check is pending or a redirect is being performed, nothing is rendered.
+ *
+ * @param children - Content to render when access is allowed or when viewing onboarding pages
+ * @returns The `children` when rendering is permitted, `null` otherwise
+ */
 export default function OnboardingGuard({
   children,
 }: {
@@ -83,4 +91,3 @@ export default function OnboardingGuard({
   // Otherwise, show nothing while redirecting
   return null;
 }
-
