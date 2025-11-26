@@ -36,7 +36,7 @@ export const payAccessFee = action({
     // Get Stripe client
     const stripe = getStripeClient();
 
-    // Create checkout session using the existing payment intent
+    // Create checkout session
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       customer: stripeCustomerId,

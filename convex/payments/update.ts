@@ -8,7 +8,9 @@ export const updatePaymentFromWebhook = internalMutation({
   args: {
     paymentId: v.id("payments"),
     status: v.union(
+      v.literal("pending"),
       v.literal("paid"),
+      v.literal("refunded"),
       v.literal("failed"),
       v.literal("cancelled"),
     ),
@@ -25,7 +27,7 @@ export const updatePaymentFromWebhook = internalMutation({
 
     // Build update object
     const updateData: {
-      status: "paid" | "failed" | "cancelled";
+      status: "pending" | "paid" | "refunded" | "failed" | "cancelled";
       stripePaymentIntentId?: string;
       webhookProcessed: boolean;
     } = {
