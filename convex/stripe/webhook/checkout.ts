@@ -84,6 +84,30 @@ export const handleCheckoutEvent = internalAction({
         orderId: payment.orderId,
         status: paymentStatus,
       });
+
+      // Send order confirmation email when payment is successful
+      if (paymentStatus === "paid") {
+        const orderEmailData = await ctx.runQuery(
+          internal.orders.get.getOrderEmailData,
+          { orderId: payment.orderId }
+        );
+
+        if (orderEmailData) {
+          await ctx.runAction(internal.resend.sendEmail.sendEmail, {
+            to: orderEmailData.userEmail,
+            templateName: "orderConfirmation",
+            variables: {
+              childName: orderEmailData.childName,
+              orderType: orderEmailData.orderType,
+              startDate: orderEmailData.startDate,
+              endDate: orderEmailData.endDate,
+              price: orderEmailData.price,
+            },
+          });
+        } else {
+          console.error(`Could not get order email data for order ${payment.orderId}`);
+        }
+      }
     }
 
     return null;
