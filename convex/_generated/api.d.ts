@@ -21,12 +21,17 @@ import type * as offdays_list from "../offdays/list.js";
 import type * as orders_admin from "../orders/admin.js";
 import type * as orders_count from "../orders/count.js";
 import type * as orders_create from "../orders/create.js";
+import type * as orders_get from "../orders/get.js";
 import type * as orders_list from "../orders/list.js";
 import type * as orders_update from "../orders/update.js";
 import type * as orders_updateAll from "../orders/updateAll.js";
 import type * as payments_create from "../payments/create.js";
 import type * as payments_get from "../payments/get.js";
 import type * as payments_update from "../payments/update.js";
+import type * as resend_selectTemplate from "../resend/selectTemplate.js";
+import type * as resend_sendEmail from "../resend/sendEmail.js";
+import type * as resend_templates_orderConfirmation from "../resend/templates/orderConfirmation.js";
+import type * as resend_trigger from "../resend/trigger.js";
 import type * as schools_list from "../schools/list.js";
 import type * as schoolsandclasses from "../schoolsandclasses.js";
 import type * as stripe_checkCustomer from "../stripe/checkCustomer.js";
@@ -58,12 +63,17 @@ declare const fullApi: ApiFromModules<{
   "orders/admin": typeof orders_admin;
   "orders/count": typeof orders_count;
   "orders/create": typeof orders_create;
+  "orders/get": typeof orders_get;
   "orders/list": typeof orders_list;
   "orders/update": typeof orders_update;
   "orders/updateAll": typeof orders_updateAll;
   "payments/create": typeof payments_create;
   "payments/get": typeof payments_get;
   "payments/update": typeof payments_update;
+  "resend/selectTemplate": typeof resend_selectTemplate;
+  "resend/sendEmail": typeof resend_sendEmail;
+  "resend/templates/orderConfirmation": typeof resend_templates_orderConfirmation;
+  "resend/trigger": typeof resend_trigger;
   "schools/list": typeof schools_list;
   schoolsandclasses: typeof schoolsandclasses;
   "stripe/checkCustomer": typeof stripe_checkCustomer;
@@ -102,4 +112,134 @@ export declare const internal: FilterApi<
   FunctionReference<any, "internal">
 >;
 
-export declare const components: {};
+export declare const components: {
+  resend: {
+    lib: {
+      cancelEmail: FunctionReference<
+        "mutation",
+        "internal",
+        { emailId: string },
+        null
+      >;
+      cleanupAbandonedEmails: FunctionReference<
+        "mutation",
+        "internal",
+        { olderThan?: number },
+        null
+      >;
+      cleanupOldEmails: FunctionReference<
+        "mutation",
+        "internal",
+        { olderThan?: number },
+        null
+      >;
+      createManualEmail: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          from: string;
+          headers?: Array<{ name: string; value: string }>;
+          replyTo?: Array<string>;
+          subject: string;
+          to: string;
+        },
+        string
+      >;
+      get: FunctionReference<
+        "query",
+        "internal",
+        { emailId: string },
+        {
+          complained: boolean;
+          createdAt: number;
+          errorMessage?: string;
+          finalizedAt: number;
+          from: string;
+          headers?: Array<{ name: string; value: string }>;
+          html?: string;
+          opened: boolean;
+          replyTo: Array<string>;
+          resendId?: string;
+          segment: number;
+          status:
+            | "waiting"
+            | "queued"
+            | "cancelled"
+            | "sent"
+            | "delivered"
+            | "delivery_delayed"
+            | "bounced"
+            | "failed";
+          subject: string;
+          text?: string;
+          to: string;
+        } | null
+      >;
+      getStatus: FunctionReference<
+        "query",
+        "internal",
+        { emailId: string },
+        {
+          complained: boolean;
+          errorMessage: string | null;
+          opened: boolean;
+          status:
+            | "waiting"
+            | "queued"
+            | "cancelled"
+            | "sent"
+            | "delivered"
+            | "delivery_delayed"
+            | "bounced"
+            | "failed";
+        } | null
+      >;
+      handleEmailEvent: FunctionReference<
+        "mutation",
+        "internal",
+        { event: any },
+        null
+      >;
+      sendEmail: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          from: string;
+          headers?: Array<{ name: string; value: string }>;
+          html?: string;
+          options: {
+            apiKey: string;
+            initialBackoffMs: number;
+            onEmailEvent?: { fnHandle: string };
+            retryAttempts: number;
+            testMode: boolean;
+          };
+          replyTo?: Array<string>;
+          subject: string;
+          text?: string;
+          to: string;
+        },
+        string
+      >;
+      updateManualEmail: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          emailId: string;
+          errorMessage?: string;
+          resendId?: string;
+          status:
+            | "waiting"
+            | "queued"
+            | "cancelled"
+            | "sent"
+            | "delivered"
+            | "delivery_delayed"
+            | "bounced"
+            | "failed";
+        },
+        null
+      >;
+    };
+  };
+};
