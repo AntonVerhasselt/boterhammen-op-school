@@ -31,20 +31,3 @@ export const sendRenderedEmail = internalMutation({
     return null;
   },
 });
-
-/**
- * @deprecated Use internal.resend.sendEmail.sendEmail instead
- */
-export const sendTestEmail = internalMutation({
-  args: {},
-  returns: v.null(),
-  handler: async (ctx) => {
-    await resend.sendEmail(ctx, {
-      from: DEFAULT_FROM,
-      to: "anton.verhasselt@gmail.com",
-      subject: "Hi there",
-      html: "This is a test email",
-    });
-    return null;
-  },
-});
