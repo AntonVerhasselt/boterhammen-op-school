@@ -49,3 +49,41 @@ Join thousands of developers building full-stack apps with Convex:
 
 - Join the [Convex Discord community](https://convex.dev/community) to get help in real-time.
 - Follow [Convex on GitHub](https://github.com/get-convex/), star and contribute to the open-source implementation of Convex.
+
+---
+
+## PWA Support
+
+This application is configured as a Progressive Web App (PWA).
+
+### Features
+- Installable on mobile and desktop.
+- Offline support for static assets.
+- Custom icons generated from `public/favicon.svg`.
+
+### Icons Generation
+Icons are generated using the `scripts/generate-icons.js` script, which uses `sharp` to resize `public/favicon.svg` into various sizes required for the Web App Manifest.
+
+To regenerate icons (e.g. after changing favicon.svg):
+```bash
+node scripts/generate-icons.js
+```
+
+### Testing PWA
+1. Build the application: `npm run build`
+2. Start the production server: `npm start`
+3. Open the app in Chrome.
+4. Open DevTools > Application > Manifest to verify settings.
+5. Open DevTools > Application > Service Workers to verify the worker is registered.
+6. Run a Lighthouse audit to check for PWA criteria.
+
+### Configuration & Strategies
+- **Manifest**: Located at `public/manifest.json`.
+  - Name: "Boterhammen op school" (Short: "BOS")
+  - Start URL: `/orders`
+- **Service Worker**: Handled by `@ducanh2912/next-pwa` in `next.config.ts`.
+  - **Navigations (HTML)**: `NetworkFirst`. This ensures that redirects (like Clerk Auth and Stripe) are always handled by the browser/network unless offline. It also allows for an offline fallback to the cache for previously visited pages.
+  - **Static Assets**: `StaleWhileRevalidate` for performance.
+  - **API Routes**: `NetworkOnly` to prevent caching of dynamic data.
+  - **Cross-Origin**: The service worker is configured to ignore external domains (Clerk, Stripe) by default.
+- **Metadata**: PWA-specific metadata (manifest link, theme color) is configured in `app/layout.tsx`.
