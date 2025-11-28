@@ -118,7 +118,7 @@ function formatBoolean(value: boolean): string {
   return value ? "Yes" : "No"
 }
 
-export function OrderForm({ onSuccess }: OrderFormProps) {
+export function OrderForm({ onSuccess: _onSuccess }: OrderFormProps) {
   const router = useRouter()
   const [step, setStep] = React.useState(1)
   const [offDays, setOffDays] = React.useState<Date[]>([])

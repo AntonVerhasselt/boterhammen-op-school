@@ -21,6 +21,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
+  applicationName: "Boterhammen op School",
   title: "Boterhammen op School",
   description: "Boterhammen op School",
   icons: {
@@ -30,6 +31,9 @@ export const metadata: Metadata = {
     capable: true,
     statusBarStyle: "default",
     title: "Boterhammen op school",
+  },
+  formatDetection: {
+    telephone: false,
   },
 };
 
