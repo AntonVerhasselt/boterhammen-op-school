@@ -5,6 +5,7 @@ import ConvexClientProvider from "@/components/ConvexClientProvider";
 import { ClerkProvider } from "@clerk/nextjs";
 import OnboardingGuard from "@/components/OnboardingGuard";
 import NavBar from "@/components/NavBar";
+import ManifestLink from "@/components/ManifestLink";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -48,6 +49,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <ManifestLink />
         <ClerkProvider dynamic>
           <ConvexClientProvider>
             <OnboardingGuard>
