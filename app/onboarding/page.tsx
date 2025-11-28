@@ -63,9 +63,16 @@ const phoneInputStyles = [
   "[&_.PhoneInputCountry]:mr-2",
 ].join(" ");
 
+/**
+ * Renders the onboarding page with a profile completion form for first name, last name, and phone number.
+ *
+ * The form validates input, submits to create the current user, navigates to the root path on success, and displays field-level and root-level errors on failure.
+ *
+ * @returns The onboarding page JSX element.
+ */
 export default function OnboardingPage() {
   const router = useRouter();
-  const createUser = useMutation(api.users.create.createMyUser);
+  const createUser = useMutation(api.users.createMyUser);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -168,4 +175,3 @@ export default function OnboardingPage() {
     </div>
   );
 }
-

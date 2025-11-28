@@ -6,28 +6,12 @@ import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 /**
- * Check if access is active.
- * Access is active if accessExpiresAt exists and is >= today (inclusive).
- */
-function isAccessActive(accessExpiresAt: string | undefined | null): boolean {
-  if (!accessExpiresAt) {
-    return false;
-  }
-
-  // Get today's date in YYYY-MM-DD format
-  const today = new Date().toISOString().split("T")[0];
-
-  // Compare dates as strings (ISO 8601 format allows lexicographic comparison)
-  return accessExpiresAt >= today;
-}
-
-/**
- * Guards child content based on the current user's onboarding and subscription status, redirecting to onboarding routes when the user is not present in the database or lacks active access.
+ * Guards access to children based on user onboarding state and performs a client-side redirect to onboarding when required.
  *
- * Renders `children` when the component has mounted and either the current route is an onboarding route or the authenticated user exists in the database with active access. While the client check is pending or a redirect is being performed, nothing is rendered.
+ * This component waits for client mount and the user query to settle. If the user is authenticated but has no corresponding database record, it replaces the current route with `/onboarding`. While mounting or loading, or while redirecting, it renders `null`.
  *
- * @param children - Content to render when access is allowed or when viewing onboarding pages
- * @returns The `children` when rendering is permitted, `null` otherwise
+ * @param children - The content to render when the user is allowed to access the guarded area or when already on the onboarding page.
+ * @returns The `children` when access is allowed (user exists or current path is `/onboarding`); `null` while loading, mounting, or redirecting to `/onboarding`.
  */
 export default function OnboardingGuard({
   children,
@@ -39,7 +23,7 @@ export default function OnboardingGuard({
   const [mounted, setMounted] = useState(false);
   
   // Use useQuery with error handling - if it throws, we treat it as user not found
-  const currentUser = useQuery(api.users.get.getMyUser);
+  const currentUser = useQuery(api.users.getMyUser);
 
   useEffect(() => {
     setMounted(true);
@@ -51,8 +35,8 @@ export default function OnboardingGuard({
       return;
     }
 
-    // Don't redirect if we're already on the onboarding pages
-    if (pathname.startsWith("/onboarding")) {
+    // Don't redirect if we're already on the onboarding page
+    if (pathname === "/onboarding") {
       return;
     }
 
@@ -64,12 +48,6 @@ export default function OnboardingGuard({
     // If user is authenticated but doesn't exist in database, redirect to onboarding
     if (currentUser === null) {
       router.replace("/onboarding");
-      return;
-    }
-
-    // If user exists but doesn't have active access, redirect to subscription page
-    if (!isAccessActive(currentUser.accessExpiresAt)) {
-      router.replace("/onboarding/subscription");
     }
   }, [currentUser, pathname, router, mounted]);
 
@@ -78,13 +56,8 @@ export default function OnboardingGuard({
     return null; // or a loading spinner
   }
 
-  // If on onboarding pages, show children
-  if (pathname.startsWith("/onboarding")) {
-    return <>{children}</>;
-  }
-
-  // If user exists and has active access, show children
-  if (currentUser !== null && isAccessActive(currentUser.accessExpiresAt)) {
+  // If on onboarding page or user exists, show children
+  if (pathname === "/onboarding" || currentUser !== null) {
     return <>{children}</>;
   }
 
