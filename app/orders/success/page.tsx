@@ -13,6 +13,7 @@ import { api } from "@/convex/_generated/api";
 import { useEffect, useState } from "react";
 import { Check } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { PWAInstallPopup } from "@/components/PWAInstallPopup";
 
 /**
  * Render the order payment success page and update the order payment status by reading `session_id` from the URL.
@@ -57,6 +58,7 @@ export default function OrderSuccessPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
+      <PWAInstallPopup />
       <Card className="w-full max-w-md">
         <CardHeader>
           <div className="flex items-center justify-center mb-4">

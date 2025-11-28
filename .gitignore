@@ -45,3 +45,7 @@ next-env.d.ts
 
 # convex configuration
 /.convex/
+
+# serwist
+public/sw*
+public/swe-worker*

@@ -12,21 +12,6 @@ interface MonthPickerProps {
 }
 
 export function MonthPicker({ selectedDate, onDateChange, offDays }: MonthPickerProps) {
-  const [currentYear, setCurrentYear] = useState(new Date().getFullYear())
-
-  const isMonthDisabled = (monthIndex: number) => {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    const maxDate = new Date()
-    maxDate.setMonth(maxDate.getMonth() + 3)
-    maxDate.setHours(23, 59, 59, 999)
-
-    const monthDate = new Date(currentYear, monthIndex, 1)
-    monthDate.setHours(0, 0, 0, 0)
-
-    return monthDate <= today || monthDate > maxDate
-  }
-
   const countAvailableDaysInMonth = (monthIndex: number, year: number) => {
     let count = 0
     const daysInMonth = new Date(year, monthIndex + 1, 0).getDate()
@@ -43,6 +28,67 @@ export function MonthPicker({ selectedDate, onDateChange, offDays }: MonthPicker
       }
     }
     return count
+  }
+
+  // Helper function to check if a year has any available months
+  const hasAvailableMonths = (year: number) => {
+    const months = [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
+    ]
+    
+    return months.some((_, monthIndex) => {
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      const maxDate = new Date()
+      maxDate.setMonth(maxDate.getMonth() + 3)
+      maxDate.setHours(23, 59, 59, 999)
+
+      const monthDate = new Date(year, monthIndex, 1)
+      monthDate.setHours(0, 0, 0, 0)
+
+      // Month must be in the future and within max date
+      if (monthDate <= today || monthDate > maxDate) {
+        return false
+      }
+      
+      // Month must have at least one available day
+      return countAvailableDaysInMonth(monthIndex, year) > 0
+    })
+  }
+
+  // Initialize with current year, but if current year has no available months, use next year
+  const getInitialYear = () => {
+    const currentYear = new Date().getFullYear()
+    if (!hasAvailableMonths(currentYear)) {
+      return currentYear + 1
+    }
+    return currentYear
+  }
+
+  const [currentYear, setCurrentYear] = useState(getInitialYear())
+
+  const isMonthDisabled = (monthIndex: number) => {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const maxDate = new Date()
+    maxDate.setMonth(maxDate.getMonth() + 3)
+    maxDate.setHours(23, 59, 59, 999)
+
+    const monthDate = new Date(currentYear, monthIndex, 1)
+    monthDate.setHours(0, 0, 0, 0)
+
+    return monthDate <= today || monthDate > maxDate
   }
 
   const months = [
