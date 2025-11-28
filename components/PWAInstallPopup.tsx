@@ -121,7 +121,7 @@ export function PWAInstallPopup() {
                 onClick={handleInstallClick}
                 className="flex-1 bg-primary text-primary-foreground"
               >
-                Open
+                Install
               </Button>
             </DialogFooter>
           </>
