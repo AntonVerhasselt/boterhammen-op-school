@@ -24,6 +24,7 @@ export const metadata: Metadata = {
   applicationName: "Boterhammen op School",
   title: "Boterhammen op School",
   description: "Boterhammen op School",
+  manifest: "/manifest.json",
   icons: {
     icon: "/favicon.svg",
   },
