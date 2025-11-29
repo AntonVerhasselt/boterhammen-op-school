@@ -89,10 +89,13 @@ export default function PWADebugPage() {
     if (info.hasServiceWorker) {
       addLog("✓ Service Worker API available");
       try {
-        const registration = await navigator.serviceWorker.ready;
-        if (registration) {
-          info.serviceWorkerState = registration.active ? "active" : "unknown";
-          addLog(`✓ Service Worker: ${info.serviceWorkerState}`);
+        const registration = await navigator.serviceWorker.getRegistration();
+        if (registration?.active) {
+          info.serviceWorkerState = "active";
+          addLog(`✓ Service Worker: active`);
+        } else if (registration) {
+          info.serviceWorkerState = registration.installing ? "installing" : registration.waiting ? "waiting" : "unknown";
+          addLog(`Service Worker: ${info.serviceWorkerState}`);
         } else {
           info.serviceWorkerState = "not registered";
           addLog("✗ Service Worker not registered");
