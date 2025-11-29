@@ -132,11 +132,12 @@ export default function PWADebugPage() {
     window.addEventListener("beforeinstallprompt", handler);
     
     // Run initial check after a short delay
-    setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       checkPWAStatus();
     }, 500);
 
     return () => {
+      clearTimeout(timeoutId);
       window.removeEventListener("beforeinstallprompt", handler);
     };
   }, [checkPWAStatus, addLog]);
