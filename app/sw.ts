@@ -11,6 +11,8 @@ declare global {
 declare const self: ServiceWorkerGlobalScope;
 
 // Minimal Serwist setup - no caching, just registration
+// Note: manifest.json is excluded from precaching in next.config.ts
+// so the browser can handle it natively for PWA detection
 const serwist = new Serwist({
   precacheEntries: self.__SW_MANIFEST || [],
   skipWaiting: true,
@@ -20,10 +22,3 @@ const serwist = new Serwist({
 });
 
 serwist.addEventListeners();
-
-// Explicitly handle manifest.json - always fetch from network
-self.addEventListener("fetch", (event) => {
-  if (event.request.url.includes("/manifest.json")) {
-    event.respondWith(fetch(event.request));
-  }
-});

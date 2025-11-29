@@ -5,7 +5,6 @@ import ConvexClientProvider from "@/components/ConvexClientProvider";
 import { ClerkProvider } from "@clerk/nextjs";
 import OnboardingGuard from "@/components/OnboardingGuard";
 import NavBar from "@/components/NavBar";
-import ManifestLink from "@/components/ManifestLink";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -46,10 +45,25 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                // Move manifest link to head immediately
+                var manifestLink = document.querySelector('link[rel="manifest"]');
+                if (manifestLink && manifestLink.parentNode !== document.head) {
+                  document.head.appendChild(manifestLink);
+                }
+              })();
+            `,
+          }}
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ManifestLink />
         <ClerkProvider dynamic>
           <ConvexClientProvider>
             <OnboardingGuard>
