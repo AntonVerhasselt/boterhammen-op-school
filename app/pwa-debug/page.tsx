@@ -148,17 +148,21 @@ export default function PWADebugPage() {
       return;
     }
 
-    addLog("Showing install prompt...");
-    deferredPrompt.prompt();
+    try {
+      addLog("Showing install prompt...");
+      await deferredPrompt.prompt();
 
-    const { outcome } = await deferredPrompt.userChoice;
-    addLog(`User choice: ${outcome}`);
+      const { outcome } = await deferredPrompt.userChoice;
+      addLog(`User choice: ${outcome}`);
 
-    if (outcome === "accepted") {
-      addLog("✓ User accepted the install");
-      setDeferredPrompt(null);
-    } else {
-      addLog("User dismissed the install");
+      if (outcome === "accepted") {
+        addLog("✓ User accepted the install");
+        setDeferredPrompt(null);
+      } else {
+        addLog("User dismissed the install");
+      }
+    } catch (error) {
+      addLog(`✗ Error showing install prompt: ${error}`);
     }
   };
 
