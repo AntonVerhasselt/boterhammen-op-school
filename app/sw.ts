@@ -1,10 +1,7 @@
-import { defaultCache } from "@serwist/next/worker";
+// Minimal service worker - just enough for PWA installability
 import type { PrecacheEntry, SerwistGlobalConfig } from "serwist";
 import { Serwist } from "serwist";
 
-// This declares the value of `injectionPoint` to TypeScript.
-// `injectionPoint` is the string that will be replaced by the actual precache manifest.
-// By default, this string is set to `"self.__SW_MANIFEST"`.
 declare global {
   interface WorkerGlobalScope extends SerwistGlobalConfig {
     __SW_MANIFEST: (PrecacheEntry | string)[] | undefined;
@@ -13,13 +10,15 @@ declare global {
 
 declare const self: ServiceWorkerGlobalScope;
 
+// Minimal Serwist setup - no caching, just registration
+// Note: manifest.json is excluded from precaching in next.config.ts
+// so the browser can handle it natively for PWA detection
 const serwist = new Serwist({
-  precacheEntries: self.__SW_MANIFEST,
+  precacheEntries: self.__SW_MANIFEST || [],
   skipWaiting: true,
   clientsClaim: true,
-  navigationPreload: true,
-  runtimeCaching: defaultCache,
+  // No runtime caching - everything goes to network
+  runtimeCaching: [],
 });
 
 serwist.addEventListeners();
-

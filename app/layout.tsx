@@ -45,6 +45,22 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                // Move manifest link to head immediately
+                var manifestLink = document.querySelector('link[rel="manifest"]');
+                if (manifestLink && manifestLink.parentNode !== document.head) {
+                  document.head.appendChild(manifestLink);
+                }
+              })();
+            `,
+          }}
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
